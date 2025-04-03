@@ -42,6 +42,10 @@
   justify-content: center;
 }
 
+#chart {
+  padding-left: 2em;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

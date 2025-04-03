@@ -23,10 +23,10 @@ pub struct Player{
 
 
 impl Player{
-    pub fn new(run_data: StartData) -> Player {
-        let intake = IntakeHelper::new(&run_data);
+    pub async fn new(run_data: StartData) -> Player {
+        let intake = IntakeHelper::new(&run_data).await;
         Player {
-            raw_data: intake.get_game_data_vec().unwrap(),
+            raw_data: intake.get_game_data_vec().await.unwrap(),
             start: run_data,
         }
     }
