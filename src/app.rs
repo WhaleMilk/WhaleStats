@@ -1,15 +1,13 @@
 use charming::{
-    component::{Legend, Axis, Title},
-    element::{ItemStyle, AxisType},
-    series::{Pie, PieRoseType, Line},
-    Chart, WasmRenderer
+    component::{Axis, Legend, Title}, element::{AxisType, ItemStyle}, renderer::Echarts, series::{Graph, Line, Pie, PieRoseType}, Chart, WasmRenderer
 };
-use leptos::task::spawn_local;
+use leptos::{reactive::spawn, task::spawn_local};
 use leptos::{ev::SubmitEvent, prelude::*};
+// use leptos_router::components::{Outlet, ParentRoute, Route, Router, Routes, A};
+// use leptos_router::hooks::use_params_map;
+// use leptos_router::path;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
-use leptos_use::utils::Pausable;
-use leptos_use::use_interval_fn;
 
 #[wasm_bindgen]
 extern "C" {
@@ -24,96 +22,26 @@ struct GreetArgs<'a> {
 
 #[component]
 pub fn App() -> impl IntoView {
-    // let (name, set_name) = signal(String::new());
-    // let (greet_msg, set_greet_msg) = signal(String::new());
-    // let renderer = RwSignal::new(WasmRenderer::new(500, 500));
-    // let (chart, set_chart) = signal(Chart::new());
-
-    // let update_name = move |ev| {
-    //     let v = event_target_value(&ev);
-    //     set_name.set(v);
-    // };
-
-    // let greet = move |ev: SubmitEvent| {
-    //     ev.prevent_default();
-    //     spawn_local(async move {
-    //         let name = name.get_untracked();
-    //         if name.is_empty() {
-    //             return;
-    //         }
-
-    //         let args = serde_wasm_bindgen::to_value(&GreetArgs { name: &name }).unwrap();
-    //         // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    //         let new_msg = invoke("greet", args).await.as_string().unwrap();
-    //         set_greet_msg.set(new_msg);
-    //     });
-    // };
-
-    // let graph = move|ev: SubmitEvent| {
-    //     ev.prevent_default();
-    //     spawn_local( async move {
-    //         let chart = Chart::new()
-    //         .legend(Legend::new().top("bottom"))
-    //         .series(
-    //             Pie::new()
-    //                 .name("GRAPH TEST")
-    //                 .rose_type(PieRoseType::Radius)
-    //                 .radius(vec!["50", "250"])
-    //                 .center(vec!["50%", "50%"])
-    //                 .item_style(ItemStyle::new().border_radius(8))
-    //                 .data(vec![
-    //                     (40.0, "rose 1"),
-    //                     (38.0, "rose 2"),
-    //                     (32.0, "rose 3"),
-    //                     (30.0, "rose 4"),
-    //                     (28.0, "rose 5"),
-    //                     (26.0, "rose 6"),
-    //                     (22.0, "rose 7"),
-    //                     (18.0, "rose 8"),
-    //                 ]),
-    //         );
-
-    //         //set_chart.set(chart);
-
-    //         let renderer = WasmRenderer::new(500, 500);
-    //         renderer.render("chart", &chart).unwrap();
-    //     });
-    // };
-
-    // let pie = Action::new(move |_input: &()| {
-    //     async move {
-    //         let chart = Chart::new()
-    //         .legend(Legend::new().top("bottom"))
-    //         .series(
-    //             Pie::new()
-    //                 .name("GRAPH TEST")
-    //                 .rose_type(PieRoseType::Radius)
-    //                 .radius(vec!["50", "250"])
-    //                 .center(vec!["50%", "50%"])
-    //                 .item_style(ItemStyle::new().border_radius(8))
-    //                 .data(vec![
-    //                     (40.0, "rose 1"),
-    //                     (38.0, "rose 2"),
-    //                     (32.0, "rose 3"),
-    //                     (30.0, "rose 4"),
-    //                     (28.0, "rose 5"),
-    //                     (26.0, "rose 6"),
-    //                     (22.0, "rose 7"),
-    //                     (18.0, "rose 8"),
-    //                 ]),
-    //         );
-    
-    //         let renderer = WasmRenderer::new(500, 500);
-    //         renderer.render("chart", &chart).unwrap();
-    //     }
-    // });
-
+    //define at top an enum for each kind of graph
+    //that enum can be used for the action to decide which graph to render
+    enum GraphTypes {
+        GD15,
+        CSM,
+        DPM,
+    }
     let data = RwSignal::new(vec![150, 230, 224, 218, 135, 147, 260]);
-    let action = Action::new(move |_input: &()| {
-        let local = data.get();
+    let data2 = RwSignal::new(vec![120, 130, 270, 144, 189, 261, 200]);
+    let data3 = RwSignal::new(vec![50, 17, 42, 44, 48, 43, 79]);
+
+    let graph_render = Action::new( move |input: &GraphTypes| {
+        let (local, name) = match input {
+            GraphTypes::GD15 => (data.get(), "GD@15"),
+            GraphTypes::CSM => (data2.get(), "CS/M"),
+            GraphTypes::DPM => (data3.get(), "DP/M"),
+        };
         async move {
             let chart = Chart::new()
-                .title(Title::new().text("Demo: Leptos + Charming"))
+                .title(Title::new().text(name))
                 .x_axis(
                     Axis::new()
                         .type_(AxisType::Category)
@@ -122,30 +50,55 @@ pub fn App() -> impl IntoView {
                 .y_axis(Axis::new().type_(AxisType::Value))
                 .series(Line::new().data(local));
 
-            let renderer = WasmRenderer::new(600, 600);
-            renderer.render("chart",&chart).unwrap();
-    }});
-
-    // let Pausable { pause, resume, is_active: _ } = use_interval_fn(
-    //     move || {
-    //         data.update(|d| d.rotate_right(1));
-    //         action.dispatch(());
-    //     },
-    //     1000
-    // );
-    
-
-    //action.dispatch(());
-    
-//            <button on:click=move |_| pause()>"Pause"</button>
-//             <button on:click=move |_| resume()>"Resume"</button>
+            let renderer = WasmRenderer::new(400, 250);
+            
+            renderer.render(name,&chart).unwrap();
+        }});
 
     view!{
-        <div>
-            <div id="chart"> { action.dispatch(()); }</div>
-
-        </div>
+        <main class="graph_container">
+            <div>
+                <div id="GD@15"> { graph_render.dispatch(GraphTypes::GD15); }</div>
+            </div>
+            <div>
+                <div id="CS/M"> { graph_render.dispatch(GraphTypes::CSM); } </div>
+            </div>
+            <div>
+                <div id="DP/M"> { graph_render.dispatch(GraphTypes::DPM);} </div> //DIV ID HAS TO MATCH ID OF CHART
+            </div>
+        </main>
     }
+
+}
+
+#[component]
+pub fn NotApp() -> impl IntoView {
+
+    let (name, set_name) = signal(String::new());
+    let (greet_msg, set_greet_msg) = signal(String::new());
+    let renderer = RwSignal::new(WasmRenderer::new(500, 500));
+    let (chart, set_chart) = signal(Chart::new());
+
+    let update_name = move |ev| {
+        let v = event_target_value(&ev);
+        set_name.set(v);
+    };
+
+    let greet = move |ev: SubmitEvent| {
+        ev.prevent_default();
+        spawn_local(async move {
+            let name = name.get_untracked();
+            if name.is_empty() {
+                return;
+            }
+
+            let args = serde_wasm_bindgen::to_value(&GreetArgs { name: &name }).unwrap();
+            // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+            let new_msg = invoke("greet", args).await.as_string().unwrap();
+            set_greet_msg.set(new_msg);
+        });
+    };
+
 
     // view! {
     //     <main class="container">
@@ -161,7 +114,7 @@ pub fn App() -> impl IntoView {
     //         </div>
     //         <p>"Please enter a UID"</p>
 
-    //         <form class="row" on:submit=graph>
+    //         <form class="row" on:submit=greet>
     //             <input
     //                 id="greet-input"
     //                 placeholder="Enter your UID..."
@@ -169,8 +122,39 @@ pub fn App() -> impl IntoView {
     //             />
     //             <button type="submit">"Go"</button>
     //         </form>
-    //         <p>{ move || pie.dispatch(()); }</p>
+    //         <p></p>
     //     </main>
-    // }
+    // };
+
+    //https://book.leptos.dev/islands.html
+
+    view! {
+        //<Router>
+        
+        <main class="container">
+            <h1>"Welcome to WhaleStats!"</h1>
+
+            <div class="row">
+                <a href="https://tauri.app" target="_blank">
+                    <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo"/>
+                </a>
+                <a href="https://docs.rs/leptos/" target="_blank">
+                    <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo"/>
+                </a>
+            </div>
+            <p>"Please enter a UID"</p>
+
+            <form class="row" on:submit=greet>
+                <input
+                    id="greet-input"
+                    placeholder="Enter your UID..."
+                    on:input=update_name
+                />
+                <button type="submit">"Go"</button>
+            </form>
+            <p>{ move || greet_msg.get() }</p>
+        </main>
+        //</Router>
+    }
     //<p>{ move || greet_msg.get() }</p>
 }

@@ -1,11 +1,4 @@
 //use analyzer_core::{player::Player, StartData};
-use charming::{
-    component::Legend,
-    element::ItemStyle,
-    series::{Pie, PieRoseType},
-    Chart, WasmRenderer
-};
-use::tauri::Runtime;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -31,67 +24,13 @@ fn greet(name: &str) -> String {
 // #[tauri::command]
 // fn set_api_key(key: &str) -> String {
 //     format!("Set {} as development API key", key)
-// }
-
-#[tauri::command]
-async fn draw_graph<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<(), String> {
-    let chart = Chart::new()
-    .legend(Legend::new().top("bottom"))
-    .series(
-        Pie::new()
-            .name("GRAPH TEST")
-            .rose_type(PieRoseType::Radius)
-            .radius(vec!["50", "250"])
-            .center(vec!["50%", "50%"])
-            .item_style(ItemStyle::new().border_radius(8))
-            .data(vec![
-                (40.0, "rose 1"),
-                (38.0, "rose 2"),
-                (32.0, "rose 3"),
-                (30.0, "rose 4"),
-                (28.0, "rose 5"),
-                (26.0, "rose 6"),
-                (22.0, "rose 7"),
-                (18.0, "rose 8"),
-            ]),
-    );
-
-
-    Ok(())
-}
-
-
-// fn bad_draw_graph(name: &str) -> WasmRenderer {
-//     let chart = Chart::new()
-//         .legend(Legend::new().top("bottom"))
-//         .series(
-//             Pie::new()
-//                 .name(String::from(name))
-//                 .rose_type(PieRoseType::Radius)
-//                 .radius(vec!["50", "250"])
-//                 .center(vec!["50%", "50%"])
-//                 .item_style(ItemStyle::new().border_radius(8))
-//                 .data(vec![
-//                     (40.0, "rose 1"),
-//                     (38.0, "rose 2"),
-//                     (32.0, "rose 3"),
-//                     (30.0, "rose 4"),
-//                     (28.0, "rose 5"),
-//                     (26.0, "rose 6"),
-//                     (22.0, "rose 7"),
-//                     (18.0, "rose 8"),
-//                 ]),
-//         );
-
-//     let mut renderer = WasmRenderer::new(500, 500);
-//     return renderer;
-// }
+// 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, draw_graph])
+        .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

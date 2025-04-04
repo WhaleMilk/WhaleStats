@@ -42,10 +42,6 @@
   justify-content: center;
 }
 
-#chart {
-  padding-left: 2em;
-}
-
 a {
   font-weight: 500;
   color: #646cff;
@@ -113,4 +109,23 @@ button {
   button:active {
     background-color: #0f0f0f69;
   }
+}
+
+.graph_container {
+
+  height: 500px;
+  width: 900px;
+  margin: 20px;
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+}
+
+#chart {
+  text-align: center;
+  padding-top: 1vh;
+}
+
+#chart2 {
+  text-align: center;
+  padding-top: 1vh;
 }

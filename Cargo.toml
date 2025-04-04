@@ -15,6 +15,7 @@ console_error_panic_hook = "0.1.7"
 analyzer-core = {version = "0.1.0", path = "analyzer-core"}
 charming = {version = "0.4.0", features = ["wasm"]}
 leptos-use = "0.15.7"
+leptos_router = "0.7.8"
 
 [workspace]
 members = [ "analyzer-core","src-tauri"]
