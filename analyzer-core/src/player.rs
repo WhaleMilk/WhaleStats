@@ -4,7 +4,7 @@ use crate::intake::data_filter::FilteredData;
 use crate::intake::IntakeHelper;
 use crate::StartData;
 
-mod analysis;
+pub mod analysis;
 
 pub struct Player{ 
     raw_data: Vec<FilteredData>,

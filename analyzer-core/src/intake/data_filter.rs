@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+use serde_derive::{Deserialize, Serialize};
 
 use super::match_data::MatchData;
 use super::timeline::{ParticipantFrames, Timeline};
 
 //[DataPerPos; 5],
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FilteredData{
     pub pids: [(String, String); 5],
     pub me: Me, 
@@ -17,20 +18,20 @@ pub struct FilteredData{
     pub game_start: i64
 } //data ideas: death impact (record each death and somehow quantify the qualtiy of that death), map presence, items, runes, ganking, vision, 
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Me{
     pub side: Side,
     pub champ: String,
     pub pos: Position,
 }
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub enum Side{
     #[default]
     BLUE,
     RED
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub enum Position{
     #[default]
     TOP,

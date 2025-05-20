@@ -1,4 +1,5 @@
 //use analyzer_core::{player::Player, StartData};
+use analyzer_core::save::Save;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -25,6 +26,11 @@ fn greet(name: &str) -> String {
 // fn set_api_key(key: &str) -> String {
 //     format!("Set {} as development API key", key)
 // 
+
+#[tauri::command]
+async fn get_save_data(path: &str) -> Result<Save, ()> {
+    todo!();
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

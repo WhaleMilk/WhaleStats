@@ -112,20 +112,9 @@ button {
 }
 
 .graph_container {
-
   height: 500px;
-  width: 900px;
+  width: 1200px;
   margin: 20px;
   display: grid;
-  grid-template-columns: auto auto auto auto;
-}
-
-#chart {
-  text-align: center;
-  padding-top: 1vh;
-}
-
-#chart2 {
-  text-align: center;
-  padding-top: 1vh;
+  grid-template-columns: 1fr 1fr;
 }

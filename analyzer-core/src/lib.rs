@@ -1,8 +1,6 @@
-
-
 pub mod player;
 pub mod intake;
-mod save;
+pub mod save;
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -17,4 +15,6 @@ pub struct StartData {
     pub end_date: String,
     #[serde(rename = "summonerID")]
     pub summoner_id: String,
+    pub region: String,
 }
+

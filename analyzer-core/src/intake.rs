@@ -14,6 +14,7 @@ use crate::StartData;
 use serde::Deserialize;
 use serde_json::Deserializer;
 use std::error::Error;
+use std::str::FromStr;
 use chrono::{NaiveDate, Utc, TimeZone};
 
 pub struct IntakeHelper {
@@ -30,12 +31,30 @@ impl IntakeHelper {
         }
     }
 
-
     async fn get_games(start: &StartData) -> Result<Vec<String>, String> {
         let mut game_ids = Vec::new();
         let start_end = Self::get_time_range(&start.start_date, &start.end_date).await.unwrap();
-
-        let resp = reqwest::get(format!("https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}&api_key={}", start.puuid, start_end, start.api_key)).await.unwrap().text().await.unwrap();
+        let absolute_server = start.region.as_str();
+        let server = match absolute_server {
+            "NA" => "americas",
+            "BR" => "americas",
+            "LAS" => "americas",
+            "LAN" => "americas",
+            "KR" => "asia",
+            "JP" => "asia",
+            "EUW" => "europe",
+            "EUNE" => "europe",
+            "ME" => "europe",
+            "TR" => "europe",
+            "RU" => "europe",
+            "OCE" => "sea",
+            "VN" => "sea",
+            "TW" => "sea",
+            &_ => "americas"
+        };
+        let resp = reqwest::get
+            (format!("https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}&api_key={}",
+            server, start.puuid, start_end, start.api_key)).await.unwrap().text().await.unwrap();
         println!("{}", resp.purple());
 
 

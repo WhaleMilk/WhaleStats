@@ -1,7 +1,8 @@
 use crate::player::Player;
 use crate::intake::data_filter::{FilteredData, Position, Side};
+use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GameStatistics{
     puuid: String,
     pub game_start: i64,
