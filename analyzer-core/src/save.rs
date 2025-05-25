@@ -13,8 +13,8 @@ pub struct Save {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInfo {
     summoner_name: String,
+    tagline: String,
     puuid: String,
-    riot_id: String,
     last_calc_date: String,
     region: String,
 }

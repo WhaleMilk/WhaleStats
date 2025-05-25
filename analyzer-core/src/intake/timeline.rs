@@ -37,22 +37,22 @@ pub struct Frame {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Event {
-    pub real_timestamp: Option<i64>,
+    pub item_id: Option<i64>,
+    pub participant_id: Option<i64>,
     pub timestamp: i64,
     #[serde(rename = "type")]
     pub type_field: String,
-    pub item_id: Option<i64>,
-    pub participant_id: Option<i64>,
     pub level_up_type: Option<String>,
     pub skill_slot: Option<i64>,
     pub creator_id: Option<i64>,
     pub ward_type: Option<String>,
-    pub killer_id: Option<i64>,
+    pub real_timestamp: Option<i64>,
     pub level: Option<i64>,
     #[serde(default)]
     pub assisting_participant_ids: Vec<i64>,
     pub bounty: Option<i64>,
     pub kill_streak_length: Option<i64>,
+    pub killer_id: Option<i64>,
     pub position: Option<Position>,
     pub shutdown_bounty: Option<i64>,
     #[serde(default)]
@@ -67,15 +67,15 @@ pub struct Event {
     pub after_id: Option<i64>,
     pub before_id: Option<i64>,
     pub gold_gain: Option<i64>,
-    pub lane_type: Option<String>,
-    pub multi_kill_length: Option<i64>,
     pub killer_team_id: Option<i64>,
     pub monster_sub_type: Option<String>,
     pub monster_type: Option<String>,
+    pub lane_type: Option<String>,
     pub name: Option<String>,
     pub building_type: Option<String>,
     pub tower_type: Option<String>,
     pub actual_start_time: Option<i64>,
+    pub multi_kill_length: Option<i64>,
     pub game_id: Option<i64>,
     pub winning_team: Option<i64>,
 }

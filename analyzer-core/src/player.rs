@@ -1,5 +1,6 @@
 use analysis::GameStatistics;
 use owo_colors::OwoColorize;
+use serde::Deserialize;
 use crate::intake::data_filter::FilteredData;
 use crate::intake::IntakeHelper;
 use crate::StartData;
@@ -11,16 +12,12 @@ pub struct Player{
     start: StartData,
 }
 
-
-// pub struct DataPerPos{ //weighted averages of stuff
-//     games_played: i16,
-//     gd15: i16,
-//     csm: f32,
-//     dpm: i16,
-//     kp: f32,
-//     win_loss: f32
-// }
-
+#[derive(Deserialize)]
+pub struct PlayerIdent {
+    puuid: String,
+    game_name: String,
+    tagline: String
+}
 
 impl Player{
     pub async fn new(run_data: StartData) -> Player {
@@ -43,17 +40,27 @@ impl Player{
         return &self.raw_data.get(i).unwrap().pids;
     }
 
-    pub fn process_day_games(&self) -> Vec<GameStatistics> {
+    pub async fn process_day_games(&self) -> Vec<GameStatistics> {
         let mut games: Vec<GameStatistics> = Vec::new();
 
         println!("{}", "Processing game data...".green());
         for game in &self.raw_data {
+            println!("{}", "Processing game...".green());
             games.push(self.process(game));
         }
 
         return games;
     }
     //need to find specific stats such as gd15, which position player of interest is in, and 
+
+    pub async fn build_start_data(game_name: String, tagline: String, server: String, api_key: String) -> StartData {
+        let p = IntakeHelper::request_player_data(&game_name, &tagline, &server, &api_key).await.unwrap();
+        todo!()
+    }
+
+    async fn search_save() {
+        todo!("Check /src-tauri/profiles for json file w ith puuid name. If found, load save file, if not, ")
+    }
 
 }
 

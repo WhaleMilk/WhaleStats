@@ -1,6 +1,7 @@
 use owo_colors::OwoColorize;
 
-use crate::intake::match_data::MatchData;
+use crate::player::PlayerIdent;
+use crate::{intake::match_data::MatchData, save::PlayerData};
 use crate::intake::timeline::Timeline;
 use crate::intake::data_filter::FilteredData;
 
@@ -31,11 +32,8 @@ impl IntakeHelper {
         }
     }
 
-    async fn get_games(start: &StartData) -> Result<Vec<String>, String> {
-        let mut game_ids = Vec::new();
-        let start_end = Self::get_time_range(&start.start_date, &start.end_date).await.unwrap();
-        let absolute_server = start.region.as_str();
-        let server = match absolute_server {
+    async fn get_server(server: &str) -> &str {
+        match server {
             "NA" => "americas",
             "BR" => "americas",
             "LAS" => "americas",
@@ -51,7 +49,14 @@ impl IntakeHelper {
             "VN" => "sea",
             "TW" => "sea",
             &_ => "americas"
-        };
+        }
+    }
+
+    async fn get_games(start: &StartData) -> Result<Vec<String>, String> {
+        let mut game_ids = Vec::new();
+        let start_end = Self::get_time_range(&start.start_date, &start.end_date).await.unwrap();
+        let absolute_server = start.region.as_str();
+        let server = IntakeHelper::get_server(absolute_server).await;
         let resp = reqwest::get
             (format!("https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}&api_key={}",
             server, start.puuid, start_end, start.api_key)).await.unwrap().text().await.unwrap();
@@ -111,7 +116,7 @@ impl IntakeHelper {
     }
 
     async fn request_game_data(id: &String, api_key: &String) -> Result<MatchData, Box<dyn Error>>{
-        println!("{}", "Debug: Entered match request".yellow());
+        println!("{}", format!("Getting game {}", &id).green());
         let resp = reqwest::get(format!("https://americas.api.riotgames.com/lol/match/v5/matches/{}?api_key={}", id, api_key)).await.unwrap().text().await.unwrap();
         // if *id == String::from("NA1_5245259095") {println!("{}", resp); }
         let game: MatchData = serde_json::from_str(&resp)?;
@@ -119,13 +124,18 @@ impl IntakeHelper {
     }
 
     pub async fn request_match_timeline(id: &String, api_key: &String) -> Result<Timeline, Box<dyn Error>> {
-        println!("{}", "Debug: Entered tl request".yellow());
         let resp = reqwest::get(format!("https://americas.api.riotgames.com/lol/match/v5/matches/{}/timeline?api_key={}", id, api_key)).await.unwrap().text().await.unwrap();
-        //println!("{}", resp);
         let out: Timeline = serde_json::from_str(&resp)?;
         Ok(out)
     }
 
+    pub async fn request_player_data(game_name: &String, tagline: &String, region: &String, api_key: &String) -> Result<PlayerIdent,  Box<dyn Error>> {
+        let server = IntakeHelper::get_server(region.as_str()).await;
+        let resp = reqwest::get
+            (format!("https://{}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{}/{}?api_key={}", 
+            server, game_name, tagline, api_key)).await.unwrap().json::<PlayerIdent>().await.unwrap();  
+        Ok(resp)
+    }
 }
 
 // use std::{sync::mpsc, thread::yield_now};
