@@ -160,6 +160,7 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
             async move {
             let local = gd15_sig.get();
             let slice = &local[0..];
+            //stupid comment
             let name = "GD@15";
             //let mut test = unsafe_extract_data(local);
             let target = LineStyle::new();
