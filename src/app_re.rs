@@ -27,7 +27,6 @@ struct QueryArgs<'a> {
     puuid: &'a str,
 }
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Plots {
     pub gd: Vec<f64>,
@@ -49,6 +48,9 @@ enum GraphTypes {
     KP,
 }
 
+/* Entry point for the program: component loads one child component at a time depending on the status of the ReadSignal "current comp"
+ * The match statement in this component is more or less the directory for every screen the WhaleStats will be able to display
+ */
 #[component] 
 pub fn App_Re() -> impl IntoView {
     let (current_comp, set_current_comp) = signal("Landing".to_string());
@@ -69,6 +71,7 @@ pub fn App_Re() -> impl IntoView {
     }
 }
 
+/* Stat Display: The page which displayes all data collected by the analyzer-core backend. Takes in a ReadSignal as an argument as an identification for what player is being displayed. */
 #[component] 
 pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
     let user_puuid = read_puuid.get_untracked();
@@ -136,52 +139,15 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
         {move || match load_data.get() {
             Some(_data) => {
                 view! {
-                    <div><div id="GD@15" class="chart"> /*{ graph_render.dispatch(GraphTypes::GD15); } */ </div> </div>
-                    <div><div id="CS/M" class="chart"> /*{ graph_render.dispatch(GraphTypes::CSM); } */ </div> </div>
-                    <div><div id="DP/M" class="chart"> /*{ graph_render.dispatch(GraphTypes::DPM); } */ </div> </div>
-                    <div><div id="KP" class="chart"> /*{ graph_render.dispatch(GraphTypes::KP); } */ </div> </div>
+                    <div><div id="GD@15" class="chart"></div> </div>
+                    <div><div id="CS/M" class="chart"></div> </div>
+                    <div><div id="DP/M" class="chart"></div> </div>
+                    <div><div id="KP" class="chart"></div> </div>
                 }
             }.into_any(),
             None => view! {<div><p>"Loading..."</p></div>}.into_any()
         }}
         </div>
-            // <div class="graph_container"> 
-            //     <Suspense fallback=move|| view! {<p>"Loading..."</p>}>
-            //         {move || {
-            //             let _ = Suspend::new(async move {
-            //                 plots_sig.set(load_data.await);
-            //             });
-                        
-            //             view! {
-            //                 <div>
-            //                     {move || {
-            //                         let plots = plots_sig.get();
-            //                         if !plots.gd.is_empty() {
-            //                             view! {
-            //                                 <>
-            //                                     <div>
-            //                                         <div id="GD@15" class="chart"> { graph_render.dispatch(GraphTypes::GD15)}</div>
-            //                                     </div>
-            //                                     <div>
-            //                                         <div id="CS/M" class="chart"> { graph_render.dispatch(GraphTypes::CSM) }</div>
-            //                                     </div>
-            //                                     <div>
-            //                                         <div id="DP/M" class="chart"> {graph_render.dispatch(GraphTypes::DPM)}</div>
-            //                                     </div>
-            //                                     <div>
-            //                                         <div id="KP" class="chart"> { graph_render.dispatch(GraphTypes::KP) }.into_any()</div>
-            //                                     </div>
-            //                                 </>
-            //                             }.into_any()
-            //                         } else {
-            //                             view! { <p>"Loading data..."</p> }.into_any()
-            //                         }
-            //                     }}
-            //                 </div>
-            //             }.into_any()
-            //         }}
-            //     </Suspense>
-            // </div>
     }
 }
 
