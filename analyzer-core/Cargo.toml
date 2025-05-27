@@ -9,7 +9,7 @@ path = "src/lib.rs"
 
 [dependencies]
 chrono = "0.4.38"
-reqwest = { version = "0.12.15", features = ["blocking"]}
+reqwest = { version = "0.12.15", features = ["blocking", "json"]}
 tokio = { version = "1", features = ["rt", "sync", "time"]}
 serde = "1.0.215"
 serde_derive = "1.0.215"

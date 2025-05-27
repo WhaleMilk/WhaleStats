@@ -5,7 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-leptos = { version = "0.7", features = ["csr"] }
+leptos = { version = "0.8.2", features = ["csr"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
@@ -13,9 +13,10 @@ serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
 console_error_panic_hook = "0.1.7"
 analyzer-core = {version = "0.1.0", path = "analyzer-core"}
-charming = {version = "0.4.0", features = ["wasm"]}
+charming = {version = "0.5.0", features = ["wasm"]}
 leptos-use = "0.15.7"
-leptos_router = "0.7.8"
+leptos_router = "0.8.2"
+serde_json = "1.0.140"
 
 [workspace]
 members = [ "analyzer-core","src-tauri"]

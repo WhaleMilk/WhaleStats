@@ -17,7 +17,7 @@ pub struct Metadata {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", default)]
+#[serde(rename_all = "camelCase")]
 pub struct Info {
     pub end_of_game_result: String,
     pub game_creation: i64,
@@ -38,7 +38,7 @@ pub struct Info {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", default)]
+#[serde(rename_all = "camelCase")]
 pub struct Participant {
     #[serde(rename = "PlayerScore0")]
     pub player_score0: i64,
@@ -69,7 +69,6 @@ pub struct Participant {
     pub assists: i64,
     pub baron_kills: i64,
     pub basic_pings: i64,
-    pub bounty_level: i64,
     pub challenges: Challenges,
     pub champ_experience: i64,
     pub champ_level: i64,
@@ -303,7 +302,7 @@ pub struct Challenges {
     pub max_kill_deficit: i64,
     pub max_level_lead_lane_opponent: i64,
     pub mejais_full_stack_in_time: i64,
-    pub more_enemy_jungle_than_opponent: i64,
+    pub more_enemy_jungle_than_opponent: f64,
     pub multi_kill_one_spell: i64,
     pub multi_turret_rift_herald_count: i64,
     pub multikills: i64,
@@ -358,13 +357,15 @@ pub struct Challenges {
     #[serde(rename = "wardTakedownsBefore20M")]
     pub ward_takedowns_before20m: i64,
     pub wards_guarded: i64,
-    pub highest_ward_kills: Option<i64>,
     pub jungler_kills_early_jungle: Option<i64>,
     pub kills_on_laners_early_jungle_as_jungler: Option<i64>,
-    pub earliest_dragon_takedown: Option<f64>,
-    pub first_turret_killed_time: Option<f64>,
     pub control_ward_time_coverage_in_river_or_enemy_half: Option<f64>,
+    pub highest_ward_kills: Option<i64>,
+    pub first_turret_killed_time: Option<f64>,
+    pub solo_turrets_lategame: Option<i64>,
+    pub earliest_dragon_takedown: Option<f64>,
     pub highest_champion_damage: Option<i64>,
+    pub faster_support_quest_completion: Option<i64>,
     pub highest_crowd_control_score: Option<i64>,
 }
 
