@@ -1,12 +1,11 @@
 use charming::{
     component::{Axis, Legend, Title}, 
     element::{AxisType, ItemStyle, LineStyle, LineStyleType}, 
-    series::{Graph, Line, Pie, PieRoseType},
+    series::{Graph, Line},
     theme::Theme,
     Chart, WasmRenderer
 };
-use leptos::{ev::{SubmitEvent, Event}, prelude::*};
-use leptos::{reactive::spawn, task::spawn_local};
+use leptos::{ev::SubmitEvent, prelude::*};
 use leptos::html::Input;
 use leptos::logging::log;
 
@@ -24,7 +23,7 @@ extern "C" {
 
 #[derive(Serialize, Deserialize)]
 struct QueryArgs<'a> {
-    puuid: &'a str,
+    player: &'a str,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -71,13 +70,15 @@ pub fn App_Re() -> impl IntoView {
     }
 }
 
-/* Stat Display: The page which displayes all data collected by the analyzer-core backend. Takes in a ReadSignal as an argument as an identification for what player is being displayed. */
+/* Stat Display: The page which displayes all data collected by the analyzer-core backend. 
+Takes in a ReadSignal as an argument as an identification for what player is being displayed. */
 #[component] 
 pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
     let user_puuid = read_puuid.get_untracked();
 
     let plots_sig = RwSignal::new(Plots::new()); 
-    
+
+    // lambda that generates the Chart for later rendering
     let gen_chart = move |dat: Vec<f64>, name: &str| -> Chart {
         Chart::new()
                     .title(Title::new().text(name))
@@ -86,9 +87,10 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
                     .series(Line::new().data(dat))
     };
 
+    //async lambda that fetches the data from the backend by running the appropriate command
     let fetch_data = async move |puuid: String| -> Plots {
-        let args = serde_wasm_bindgen::to_value(&QueryArgs {puuid: &puuid}).unwrap();
-        let data = invoke("query_games_test", args).await.as_string().unwrap();
+        let args = serde_wasm_bindgen::to_value(&QueryArgs {player: &puuid}).unwrap();
+        let data = invoke("load_player_data", args).await.as_string().unwrap();
         let deserialized: Vec<GameStatistics> = serde_json::from_str(&data).unwrap();
         let (mut gd, mut csm, mut dpm, mut kp) = (Vec::<f64>::new(), Vec::<f64>::new(), Vec::<f64>::new(), Vec::<f64>::new());
         for game in deserialized {
@@ -101,7 +103,8 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
         Plots {gd: gd, csm: csm, dpm: dpm, kp: kp}
     };
 
-        let graph_render = Action::new( move |input: &GraphTypes| {
+    //action which renders each graph
+    let graph_render = Action::new( move |input: &GraphTypes| {
         let (local, name) = match input {
             GraphTypes::GD15 => (plots_sig.get_untracked().gd, "GD@15"),
             GraphTypes::CSM => (plots_sig.get_untracked().csm, "CS/M"),
@@ -116,20 +119,17 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
         }
     });
 
-    let load_data = LocalResource::new(move || { fetch_data(user_puuid.clone()) });
+    let load_data = LocalResource::new(move || { fetch_data(user_puuid.clone()) }); //loads data. Pretty much blocks on the function call until completed
 
+    //Effect which runs whenever signals update
     Effect::new(move |_| {
         if let Some(data) = load_data.get() { 
             log!("Recieved data {:?}", data);
             plots_sig.set(data);
 
-            log!("Rendering gd15");
             graph_render.dispatch(GraphTypes::GD15);
-            log!("Rendering csm");
             graph_render.dispatch(GraphTypes::CSM);
-            log!("Rendering dpm");
             graph_render.dispatch(GraphTypes::DPM);
-            log!("Rendering kp");
             graph_render.dispatch(GraphTypes::KP);
         }
     });

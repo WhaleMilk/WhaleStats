@@ -1,7 +1,7 @@
 use owo_colors::OwoColorize;
 
-use crate::player::PlayerIdent;
-use crate::{intake::match_data::MatchData, save::PlayerData};
+use crate::player::{PlayerIdent, Summoner};
+use crate::intake::match_data::MatchData;
 use crate::intake::timeline::Timeline;
 use crate::intake::data_filter::FilteredData;
 
@@ -15,8 +15,7 @@ use crate::StartData;
 use serde::Deserialize;
 use serde_json::Deserializer;
 use std::error::Error;
-use std::str::FromStr;
-use chrono::{NaiveDate, Utc, TimeZone};
+use chrono::{NaiveDate, Utc, TimeZone, Days};
 
 pub struct IntakeHelper {
     game_ids: Vec<String>,
@@ -25,14 +24,14 @@ pub struct IntakeHelper {
 
 impl IntakeHelper {
     pub async fn new(start: &StartData) -> IntakeHelper {
-        let games = Self::get_games(&start).await.unwrap();
+        let games = Self::get_games(&start.start_date, &start.end_date, &start.api_key, &start.puuid, &start.region).await.unwrap();
         IntakeHelper {
             game_ids: games,
             start_data: start.clone(),
         }
     }
 
-    async fn get_server(server: &str) -> &str {
+    pub async fn get_server(server: &str) -> &str {
         match server {
             "NA" => "americas",
             "BR" => "americas",
@@ -52,20 +51,31 @@ impl IntakeHelper {
         }
     }
 
-    async fn get_games(start: &StartData) -> Result<Vec<String>, String> {
+    async fn get_games(start: &String, end: &String, api_key: &String, puuid: &String, region: &String) -> Result<Vec<String>, String> {
         let mut game_ids = Vec::new();
-        let start_end = Self::get_time_range(&start.start_date, &start.end_date).await.unwrap();
-        let absolute_server = start.region.as_str();
+        let start_end = Self::get_time_range(&start, &end).await.unwrap();
+        let absolute_server = region.as_str();
         let server = IntakeHelper::get_server(absolute_server).await;
+        println!("{}", format!("Between dates {} and {}", start, end).purple());
         let resp = reqwest::get
             (format!("https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}&api_key={}",
-            server, start.puuid, start_end, start.api_key)).await.unwrap().text().await.unwrap();
-        println!("{}", resp.purple());
-
+            server, puuid, start_end, api_key)).await.unwrap().text().await.unwrap();
 
         let mut deserializer = Deserializer::from_str(&resp);
         Deserialize::deserialize_in_place(&mut deserializer, &mut game_ids).unwrap();
-
+        println!("{}", resp.purple());
+        // if game_ids.len() < 5 {
+        //     let new_start = match NaiveDate::parse_from_str(&start, "%Y-%m-%d")
+        //         .unwrap()
+        //         .checked_sub_days(Days::new(1)) {
+        //             Some(date) => &date.format("%Y-%m-%d").to_string(),
+        //             None => start,
+        //         };
+        //     if !new_start.eq(start) { 
+        //         game_ids = Box::pin(IntakeHelper::get_games(new_start, end, api_key, puuid, region)).await.unwrap();
+        //     }
+        //     
+        // }
         Ok(game_ids)
     }
 
@@ -129,11 +139,29 @@ impl IntakeHelper {
         Ok(out)
     }
 
-    pub async fn request_player_data(game_name: &String, tagline: &String, region: &String, api_key: &String) -> Result<PlayerIdent,  Box<dyn Error>> {
+    pub async fn request_player_data(game_name: String, tagline: String, region: String, api_key: &String) -> Result<PlayerIdent,  Box<dyn Error>> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Account {
+            pub puuid: String,
+            pub game_name: String,
+            pub tag_line: String
+        }
         let server = IntakeHelper::get_server(region.as_str()).await;
         let resp = reqwest::get
-            (format!("https://{}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{}/{}?api_key={}", 
-            server, game_name, tagline, api_key)).await.unwrap().json::<PlayerIdent>().await.unwrap();  
+            (format!("https://{}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{}/{}?api_key={}", &server, game_name, tagline, api_key))
+            .await.unwrap().json::<Account>().await.unwrap(); 
+        Ok(PlayerIdent { puuid: resp.puuid, game_name: resp.game_name, tagline: resp.tag_line, server: String::from(server) })
+    }
+
+    pub async fn request_summoner(puuid: &String, server: &String, api_key: &String) -> Result<Summoner, Box<dyn Error>> {
+        let resp = reqwest::get
+            (format!("https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{}?api_key={}", /* server.to_lowercase(), */ puuid, api_key))
+            .await
+            .unwrap()
+            .json::<Summoner>()
+            .await
+            .unwrap();
         Ok(resp)
     }
 }

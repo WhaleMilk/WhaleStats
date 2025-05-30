@@ -24,4 +24,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 charming = {version = "0.4.0", features = ["wasm"] }
 analyzer-core = {version = "0.1.0", path = "../analyzer-core"}
+tauri-plugin-fs = "2"
+chrono = "0.4.38"
 

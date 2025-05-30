@@ -1,28 +1,27 @@
-use serde_json::Serializer;
 use serde_derive::{Deserialize, Serialize};
 use crate::player::analysis::GameStatistics;
 use crate::intake::data_filter::FilteredData;
-use crate::StartData;
+use crate::player::{PlayerIdent, Summoner};
+
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Save {
-    info: PlayerInfo,
-    data: PlayerData,
+    pub info: PlayerInfo,
+    pub data: PlayerData,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerInfo {
-    summoner_name: String,
-    puuid: String,
-    riot_id: String,
-    last_calc_date: String,
-    region: String,
+    pub player: PlayerIdent,
+    pub summoner: Summoner,
+    pub last_calc_date: String,
 }
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerData {
-    games: Vec<FilteredData>,
-    graph_data: Vec<GameStatistics>,
-    sessions: Vec<Session>,
+    pub games: Vec<FilteredData>,
+    pub graph_data: Vec<GameStatistics>,
+    pub max_games: i64
+    //sessions: Vec<Session>,
 }
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Session { //averages of a given session or at least a grouping of games
@@ -33,7 +32,31 @@ pub struct Session { //averages of a given session or at least a grouping of gam
     kp: f32,
 }
 
-pub fn create_save() -> Save {
-    //gather all relevant info from start info, etc
-    todo!()
+impl PlayerData {
+    fn default() -> PlayerData {
+        PlayerData{ 
+            games: Vec::default(),
+            graph_data: Vec::default(),
+            max_games: 10
+        }
+    }
 }
+
+impl Save{
+    pub fn new(iden: PlayerIdent, summoner: Summoner, today: String) -> Save {
+        Save {
+            info: PlayerInfo { player: iden, summoner: summoner, last_calc_date: today },
+            data: PlayerData::default()
+        }
+    }
+
+    pub fn update_data(&mut self, new_filter: Vec<FilteredData>, new_graph: Vec<GameStatistics>) {
+        self.data.games.extend(new_filter);
+        if self.data.games.len() > self.data.max_games as usize {self.data.games.drain(.. (self.data.games.len() - (self.data.max_games as usize) - 1));}
+
+        self.data.graph_data.extend(new_graph);
+        if self.data.graph_data.len() > self.data.max_games as usize {self.data.graph_data.drain(.. (self.data.graph_data.len() - (self.data.max_games as usize) - 1));}
+    }
+}
+
+//pub fn update_data

@@ -1,6 +1,6 @@
 use analysis::GameStatistics;
 use owo_colors::OwoColorize;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use crate::intake::data_filter::FilteredData;
 use crate::intake::IntakeHelper;
 use crate::StartData;
@@ -8,24 +8,46 @@ use crate::StartData;
 pub mod analysis;
 
 pub struct Player{ 
-    raw_data: Vec<FilteredData>,
+    pub raw_data: Vec<FilteredData>,
     start: StartData,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone, PartialEq)]
 pub struct PlayerIdent {
-    puuid: String,
-    game_name: String,
-    tagline: String
+    pub puuid: String,
+    pub game_name: String,
+    pub tagline: String,
+    pub server: String
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Summoner {
+    pub id: String,
+    pub account_id: String,
+    pub puuid: String,
+    pub profile_icon_id: i64,
+    pub revision_date: i64,
+    pub summoner_level: i64,
 }
 
 impl Player{
     pub async fn new(run_data: StartData) -> Player {
-        let intake = IntakeHelper::new(&run_data).await;
+        //let intake = IntakeHelper::new(&run_data).await;
         Player {
-            raw_data: intake.get_game_data_vec().await.unwrap(),
+            //raw_data: intake.get_game_data_vec().await.unwrap()=,
+            raw_data: Vec::new(),
             start: run_data,
         }
+    }
+
+    pub async fn load_raw(&mut self, data: Vec<FilteredData>) {
+        self.raw_data = data;
+    }
+
+    pub async fn gen_raw(&mut self) {
+        let intake = IntakeHelper::new(&self.start).await;
+        self.raw_data = intake.get_game_data_vec().await.unwrap();
     }
 
     pub fn get_game_stats(&self, i: usize) -> &FilteredData {
@@ -53,15 +75,25 @@ impl Player{
     }
     //need to find specific stats such as gd15, which position player of interest is in, and 
 
-    pub async fn build_start_data(game_name: String, tagline: String, server: String, api_key: String) -> StartData {
-        let p = IntakeHelper::request_player_data(&game_name, &tagline, &server, &api_key).await.unwrap();
-        todo!()
+    pub async fn get_ident_from_str(player: &str, api_key: &String) -> Result<PlayerIdent, Box<dyn std::error::Error>>{ 
+        let p: Vec<&str> = player.split("_").collect(); //format of USERNAME_TAG_SERVER
+        let player = IntakeHelper::request_player_data(
+            String::from(p[0]).replace(" ", "%20"), String::from(p[1]), String::from(p[2]), &api_key)
+            .await.unwrap();
+        Ok(player)
+    }
+    
+    pub async fn get_summoner(puuid: &String, server: &String, api_key: &String) -> Result<Summoner, ()>{
+        Ok(IntakeHelper::request_summoner(puuid, server, api_key).await.unwrap())
     }
 
-    async fn search_save() {
-        todo!("Check /src-tauri/profiles for json file w ith puuid name. If found, load save file, if not, ")
+    pub async fn get_raw_data(&self) -> Vec<FilteredData> {
+        self.raw_data.clone()
     }
 
+    pub async fn sort_raw(&mut self) {
+        self.raw_data.sort_by(|v1, v2| v1.game_start.cmp(&v2.game_start));
+    }
 }
 
 //todo: 
