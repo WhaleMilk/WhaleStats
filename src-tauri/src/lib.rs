@@ -23,13 +23,13 @@ async fn load_player_data(player: &str) -> Result<String, ()> { //incoming strin
     let date = Utc::now().naive_utc().format("%Y-%m-%d").to_string();
     
     let mut save = match index_file.iter().any(|e| e == player) {
-        true => {
+        true => { //if the player file exists, load that data into the save variable
             println!("Found {} in index file", player);
             let mut player_file = OpenOptions::new().read(true).open(path).unwrap();
             player_file.read_to_string(&mut player_profile).unwrap();
             serde_json::from_str(&player_profile).unwrap()
         }
-        false => {
+        false => { //if the player file does not exist, add it to index.json and create the file, then create start structures from scratch.
             println!("{} not found in index file contianing {:?}", player, index_file);
             update_index_file(player).unwrap();
             File::create(format!("./profiles/{}.json", player)).unwrap();
@@ -53,9 +53,9 @@ async fn load_player_data(player: &str) -> Result<String, ()> { //incoming strin
     };
 
     let mut player = Player::new(start).await;
-    if !save.data.games.is_empty() {
-        player.load_raw(save.data.games.clone()).await;
-    } else {
+    if !save.data.games.is_empty() { //if we are working with a populated save file, load that data into the player
+            player.load_raw(save.data.games.clone()).await;
+    } else { //otherwise, generate save data from scratch
         player.gen_raw().await;
         let mut out_data = player.process_day_games().await;
         out_data.sort_by(|v1, v2| v1.game_start.cmp(&v2.game_start));
@@ -68,10 +68,6 @@ async fn load_player_data(player: &str) -> Result<String, ()> { //incoming strin
     Ok(serde_json::to_string(&save.data.graph_data).unwrap())
 }
 
-// async fn get_today_date_string() -> String {
-//     let date = Utc::now().naive_utc().format("%Y-%m-%d").unwrap();
-// }
-
 #[tauri::command]
 async fn query_games_test(puuid: &str) -> Result<String, ()> {
 
@@ -83,26 +79,11 @@ async fn query_games_test(puuid: &str) -> Result<String, ()> {
         summoner_id: String::from("BkwWsZp4D0KbrXr7YTmoLFRDVD8Y8UoJz4HZ7sPQAPej"), //codysun summoner id
         region: String::from("NA"),
     };
-    /*
-    if we have profile saved:
-        load that profile into memory
-        check if there are new games to process
-        process those new games, add those to data
-        return that data
-    if there is no profile saved:
-        we do the usual collect the last chunk of data, then return */
 
-    //let index_file = read_indexed_profiles().unwrap();
-    // if index_file.contains(&start.puuid) {
-    //     let player_profile = OpenOptions::new().read(true).write(true).open(format!("./profiles/{}.json", &start.puuid)).unwrap();
-    // }
-    //let file_path = PathBuf::from(format!("./profiles/{}.json", &start.puuid));
     let mut buffer = File::create(format!("./profiles/{}.json", &start.puuid)).unwrap();
     let player = Player::new(start).await;
     let mut out_data = player.process_day_games().await;
     out_data.sort_by(|v1, v2| v1.game_start.cmp(&v2.game_start));
-    //writes to file all that data according to save structure
-    
 
     let serialized = serde_json::to_string(&out_data).unwrap();
     match buffer.write(serialized.as_bytes()) {
@@ -141,11 +122,6 @@ fn update_index_file(player: &str) -> Result<(), ()> {
     file.write_all(serialized.as_bytes()).unwrap();
     Ok(())
 }
-
-// #[tauri::command]
-// fn set_api_key(key: &str) -> String {
-//     format!("Set {} as development API key", key)
-// 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
