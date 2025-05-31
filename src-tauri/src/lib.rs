@@ -42,6 +42,11 @@ async fn load_player_data(player: &str) -> Result<String, ()> { //incoming strin
             Save::new(player_iden, summoner, last_calc)
         }
     };
+    
+    #[tauri::command]
+    async fn reload_profile_data() -> Result<String, ()> { //special types of argument structures need to be pased in for enty commands
+        todo!()
+    }
 
     let start = StartData {
         api_key: api_key,

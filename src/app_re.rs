@@ -133,7 +133,7 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
             graph_render.dispatch(GraphTypes::KP);
         }
     });
-
+// add button to main page for reloading, calls new command
     view! {
         <div class = "graph_container">
         {move || match load_data.get() {
