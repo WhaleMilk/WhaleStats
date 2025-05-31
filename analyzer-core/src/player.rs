@@ -36,7 +36,7 @@ impl Player{
         //let intake = IntakeHelper::new(&run_data).await;
         Player {
             //raw_data: intake.get_game_data_vec().await.unwrap()=,
-            raw_data: Vec::new(),
+            raw_data: Vec::<FilteredData>::new(),
             start: run_data,
         }
     }
@@ -49,6 +49,22 @@ impl Player{
         let intake = IntakeHelper::new(&self.start).await;
         self.raw_data = intake.get_game_data_vec().await.unwrap();
     }
+    
+    // pub async fn fetch_new_games(&mut self) -> Vec<FilteredData> {
+    //     let new_start = match self.raw_data.last() {
+    //         Some(game) => game.game_start + 10,
+    //         None => { 
+    //             self.gen_raw().await; 
+    //             -1 }
+    //     };
+
+    //     if new_start < 0 {
+    //         return
+    //     }
+
+    //     let new_games = IntakeHelper::get_games_utc(new_start, &self.start.puuid, &self.start.region, &self.start.api_key).await.unwrap();
+    //     IntakeHelper::
+    // }
 
     pub fn get_game_stats(&self, i: usize) -> &FilteredData {
         return &self.raw_data.get(i).unwrap();

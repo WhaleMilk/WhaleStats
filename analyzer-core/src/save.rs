@@ -37,7 +37,7 @@ impl PlayerData {
         PlayerData{ 
             games: Vec::default(),
             graph_data: Vec::default(),
-            max_games: 10
+            max_games: 20
         }
     }
 }

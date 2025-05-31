@@ -67,6 +67,26 @@ impl IntakeHelper {
         Ok(game_ids)
     }
 
+    pub async fn get_games_utc(start: i64, puuid: &String, region: &String, api_key: &String) -> Result<Vec<String>, String>{
+        let mut game_ids = Vec::new();
+        let now = Utc::now().to_string();
+        let start_end = format!("?startTime={start}&endTime={now}");
+        let absolute_server = region.as_str();
+        let server = IntakeHelper::get_server(absolute_server).await;
+        let resp = reqwest::get (
+            format!("https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}&api_key={}",
+            server, puuid, start_end, api_key)
+            ).await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
+        
+        let mut deserialized = Deserializer::from_str(&resp);
+        Deserialize::deserialize_in_place(&mut deserialized, &mut game_ids).unwrap();
+        Ok(game_ids)
+    }
+
     async fn get_time_range(start: &String, end: &String) -> Result<String, String> {
         let naive_date_start = NaiveDate::parse_from_str(&start, "%Y-%m-%d")
             .map_err(|e| format!("Failed to parse date: {}", e))?;
@@ -89,10 +109,31 @@ impl IntakeHelper {
         Ok(format!("?startTime={start_unix}&endTime={end_unix}"))
     }
 
-    pub async fn get_game_data_vec(&self) -> Result<Vec<FilteredData>, Box<dyn Error>> {
+    pub async fn get_game_data_by_list(ids: Vec<String>, api_key: &String, puuid: &String) -> Result<Vec<FilteredData>, Box<dyn Error>> { //gets game data of all games passed into the function
         println!("{}", "Getting player game data...".green());
         let mut out: Vec<FilteredData> = Vec::new();
+        //let mut out: Vec<FilteredData> = self.get_game_data_from_ids(self.game_ids);
+        let check_valid_game = |game: &MatchData| -> bool {
+            if game.info.end_of_game_result != "GameComplete" || game.info.game_mode != "CLASSIC" {
+                return false;
+            }
+            true
+        };
+        
+        for id in &ids {
+            let game = IntakeHelper::request_game_data(&id, &api_key).await.unwrap();
+            if check_valid_game(&game) {
+                let tl = Self::request_match_timeline(&id, &api_key).await.unwrap();
+                let mut filtered = FilteredData::new(&game, &tl);
+                filtered.find_me(&puuid);
+                out.push(filtered);
+            }
+        }
+        Ok(out)
+    }
 
+    pub async fn get_game_data_vec(&self) -> Result<Vec<FilteredData>, Box<dyn Error>> { //gets the game data of all game ids stored in the struct
+        let mut out: Vec<FilteredData> = Vec::new();
         let check_valid_game = |game: &MatchData| -> bool {
             if game.info.end_of_game_result != "GameComplete" || game.info.game_mode != "CLASSIC" {
                 return false;
@@ -108,8 +149,7 @@ impl IntakeHelper {
                 filtered.find_me(&self.start_data.puuid);
                 out.push(filtered);
             }
-        }
-
+        } 
         Ok(out)
     }
 
