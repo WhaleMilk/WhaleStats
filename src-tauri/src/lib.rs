@@ -45,7 +45,11 @@ async fn load_player_data(player: &str) -> Result<String, ()> { //incoming strin
     
     #[tauri::command]
     async fn reload_profile_data() -> Result<String, ()> { //special types of argument structures need to be pased in for enty commands
-        todo!()
+        todo!();
+        //get updated games played since last update
+        //fetch that data
+        //update the save
+        //return that new data
     }
 
     let start = StartData {
