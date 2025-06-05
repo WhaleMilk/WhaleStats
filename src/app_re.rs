@@ -8,7 +8,7 @@ use charming::{
     theme::Theme,
     Chart, WasmRenderer
 };
-use leptos::{ev::SubmitEvent, prelude::*};
+use leptos::{ev::SubmitEvent, html::Select, prelude::*};
 use leptos::html::Input;
 use leptos::logging::log;
 
@@ -194,12 +194,15 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
 #[component] 
 pub fn Landing(set_puuid: WriteSignal<String>, read_puuid: ReadSignal<String>) -> impl IntoView {
     let set_current_comp = use_context::<WriteSignal<String>>().expect("Did not find setter");
-    let input_element: NodeRef<Input> = NodeRef::new();
+    let username: NodeRef<Input> = NodeRef::new();
+    let server: NodeRef<Select> = NodeRef::new();
 
     let swap = move |ev: SubmitEvent| {
         ev.prevent_default();
-        let input = input_element.get().expect("<input> should be mounted").value();
-        set_puuid.set(input);
+        let input = username.get().expect("<input> should be mounted").value().replace("#", "_");
+        let server = server.get().expect("<select> should be mounted").value();
+        let out = format!("{}_{}", input, server);
+        set_puuid.set(out);
         set_current_comp.set("StatDisplay".to_string());
     };
 
@@ -207,17 +210,14 @@ pub fn Landing(set_puuid: WriteSignal<String>, read_puuid: ReadSignal<String>) -
         <div class="container">
             <h1>"Welcome to WhaleStats!"</h1>
 
-            <div class="row">
-                <a href="https://tauri.app" target="_blank">
-                    <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo"/>
-                </a>
-                <a href="https://docs.rs/leptos/" target="_blank">
-                    <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo"/>
-                </a>
-            </div>
-            <p>"Please enter a UID"</p>
+            <p>"Please enter username and tag"</p>
             <form class="row" on:submit=swap>
-                <input type="text" value=read_puuid node_ref=input_element/>
+                <select node_ref=server>
+                    <option value="NA">"NA"</option>
+                    <option value="EUW">"EUW"</option>
+                    <option value="KR">"KR"</option>
+                </select>
+                <input type="text" value=read_puuid node_ref=username/>
                 <input type="submit" value="Go"/>
             </form>
             <p>"Puuid is: " {read_puuid}</p>
