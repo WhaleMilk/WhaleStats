@@ -314,6 +314,7 @@ pub struct Challenges {
     pub perfect_dragon_souls_taken: i64,
     pub perfect_game: i64,
     pub pick_kill_with_ally: i64,
+    #[serde(skip)]
     pub played_champ_select_position: i64,
     pub poro_explosions: i64,
     pub quick_cleanse: i64,

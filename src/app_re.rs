@@ -1,3 +1,6 @@
+use std::fs::read;
+use std::future::ready;
+
 use charming::{
     component::{Axis, Legend, Title}, 
     element::{AxisType, ItemStyle, LineStyle, LineStyleType}, 
@@ -14,6 +17,7 @@ use analyzer_core::player::analysis::GameStatistics;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::spawn_local;
 
 #[wasm_bindgen]
 extern "C" {
@@ -26,17 +30,24 @@ struct QueryArgs<'a> {
     player: &'a str,
 }
 
+#[derive(Serialize, Deserialize)]
+struct RefreshArgs<'a> {
+    timestamp: i64, 
+    player: &'a str,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Plots {
     pub gd: Vec<f64>,
     pub csm: Vec<f64>,
     pub dpm: Vec<f64>,
     pub kp: Vec<f64>,
+    pub last_game: i64
 }
 
 impl Plots {
     pub fn new() -> Self {
-        Plots { gd: Vec::new(), csm: Vec::new(), dpm: Vec::new(), kp: Vec::new() }
+        Plots { gd: Vec::new(), csm: Vec::new(), dpm: Vec::new(), kp: Vec::new(), last_game: 0 }
     }
 }
 
@@ -92,15 +103,17 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
         let args = serde_wasm_bindgen::to_value(&QueryArgs {player: &puuid}).unwrap();
         let data = invoke("load_player_data", args).await.as_string().unwrap();
         let deserialized: Vec<GameStatistics> = serde_json::from_str(&data).unwrap();
+        let mut last_start: i64 = 0;
         let (mut gd, mut csm, mut dpm, mut kp) = (Vec::<f64>::new(), Vec::<f64>::new(), Vec::<f64>::new(), Vec::<f64>::new());
         for game in deserialized {
             gd.push(game.gd15 as f64);
             csm.push(game.csm as f64);
             dpm.push(game.dpm as f64);
             kp.push(game.kp as f64);
+            last_start = game.game_start;
         }
 
-        Plots {gd: gd, csm: csm, dpm: dpm, kp: kp}
+        Plots {gd: gd, csm: csm, dpm: dpm, kp: kp, last_game: last_start}
     };
 
     //action which renders each graph
@@ -123,7 +136,7 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
 
     //Effect which runs whenever signals update
     Effect::new(move |_| {
-        if let Some(data) = load_data.get() { 
+        if let Some(data) = load_data.get() { //effect subscribes to load_data
             log!("Recieved data {:?}", data);
             plots_sig.set(data);
 
@@ -133,21 +146,48 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
             graph_render.dispatch(GraphTypes::KP);
         }
     });
-// add button to main page for reloading, calls new command
+
+    let refresh = Action::new(move |_| {
+        let user_puuid = read_puuid.get();
+        let last_time = plots_sig.get_untracked().last_game;
+        let plots = plots_sig.clone();
+        let render = graph_render.clone();
+        
+        spawn_local(async move {
+            let args = serde_wasm_bindgen::to_value(&RefreshArgs {timestamp: last_time, player: &user_puuid}).unwrap();
+            let result = invoke("reload_profile_data", args).await;
+            
+            if let Some(true) = result.as_bool() {
+                // If there's new data, fetch and update plots
+                let new_data = fetch_data(user_puuid).await;
+                plots.set(new_data);
+                
+                // Re-render all graphs with new data
+                render.dispatch(GraphTypes::GD15);
+                render.dispatch(GraphTypes::CSM);
+                render.dispatch(GraphTypes::DPM);
+                render.dispatch(GraphTypes::KP);
+            }
+        });
+
+        ready(())
+    });
+
     view! {
-        <div class = "graph_container">
-        {move || match load_data.get() {
-            Some(_data) => {
-                view! {
+    {move || match load_data.get() {
+        Some(_data) => {
+            view! {
+                <button on:click=move |_| { let _ = refresh.dispatch(()); }>"Refresh"</button>
+                <div class = "graph_container">
                     <div><div id="GD@15" class="chart"></div> </div>
                     <div><div id="CS/M" class="chart"></div> </div>
                     <div><div id="DP/M" class="chart"></div> </div>
                     <div><div id="KP" class="chart"></div> </div>
-                }
-            }.into_any(),
-            None => view! {<div><p>"Loading..."</p></div>}.into_any()
-        }}
-        </div>
+                </div>
+            }
+        }.into_any(),
+        None => view! {<div><p>"Loading..."</p></div>}.into_any()
+    }}
     }
 }
 

@@ -52,10 +52,17 @@ impl Save{
 
     pub fn update_data(&mut self, new_filter: Vec<FilteredData>, new_graph: Vec<GameStatistics>) {
         self.data.games.extend(new_filter);
-        if self.data.games.len() > self.data.max_games as usize {self.data.games.drain(.. (self.data.games.len() - (self.data.max_games as usize) - 1));}
+        if self.data.games.len() > self.data.max_games as usize {self.data.games.drain(.. (self.data.games.len() - (self.data.games.len() - self.data.max_games as usize) - 1));}
 
         self.data.graph_data.extend(new_graph);
-        if self.data.graph_data.len() > self.data.max_games as usize {self.data.graph_data.drain(.. (self.data.graph_data.len() - (self.data.max_games as usize) - 1));}
+        //println!("{}", self.data.graph_data.len());
+        let drain_index = self.data.graph_data.len() - (self.data.max_games as usize);
+        //println!("Drain to {}", drain_index);
+        if self.data.graph_data.len() > self.data.max_games as usize {
+            self.data.graph_data.drain(.. drain_index);
+            //println!("{} items drained", drained.len());
+        }
+        //println!("{}", self.data.graph_data.len());
     }
 }
 

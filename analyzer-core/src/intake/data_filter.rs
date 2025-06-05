@@ -43,7 +43,7 @@ pub enum Position{
 
 impl FilteredData {
     pub fn new(game_data: &MatchData, game_tl: &Timeline) -> FilteredData {
-        let start = game_data.info.game_creation;
+        let start = game_data.info.game_start_timestamp;
         FilteredData {
             pids: Self::filter_pids(&game_data),
             me: Me::default(),//(10, 2),
