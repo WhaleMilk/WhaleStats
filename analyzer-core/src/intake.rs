@@ -24,34 +24,30 @@ pub struct IntakeHelper {
 
 impl IntakeHelper {
     pub async fn new(start: &StartData) -> IntakeHelper {
-        let games = Self::get_games(&start.start_date, &start.end_date, &start.api_key, &start.puuid, &start.region).await.unwrap();
+        //let games = Self::get_games(&start.start_date, &start.end_date, &start.api_key, &start.puuid, &start.region).await.unwrap();
         IntakeHelper {
-            game_ids: games,
+            game_ids: Vec::<String>::new(),
             start_data: start.clone(),
         }
     }
 
-    pub async fn get_server(server: &str) -> &str {
-        match server {
-            "NA" => "americas",
-            "BR" => "americas",
-            "LAS" => "americas",
-            "LAN" => "americas",
-            "KR" => "asia",
-            "JP" => "asia",
-            "EUW" => "europe",
-            "EUNE" => "europe",
-            "ME" => "europe",
-            "TR" => "europe",
-            "RU" => "europe",
-            "OCE" => "sea",
-            "VN" => "sea",
-            "TW" => "sea",
-            &_ => "americas"
-        }
+    pub async fn get_games_fresh(start: &String, api_key: &String, puuid: &String, region: &String) -> Result<Vec<String>, String> {
+        let mut game_ids = Vec::new();
+        let start_end = Self::get_time_range_to_now(start).await.unwrap();
+        let absolute_server = region.as_str();
+        let server = Self::get_server(absolute_server).await;
+        
+        let resp = reqwest::get
+            (format!("https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}&api_key={}",
+            server, puuid, start_end, api_key)).await.unwrap().text().await.unwrap();
+        
+        let mut deserialized =  Deserializer::from_str(&resp);
+        println!("{}", resp.purple());
+        Deserialize::deserialize_in_place(&mut deserialized, &mut game_ids).unwrap();
+        Ok(game_ids)
     }
 
-    async fn get_games(start: &String, end: &String, api_key: &String, puuid: &String, region: &String) -> Result<Vec<String>, String> {
+    pub async fn get_games_start_end(start: &String, end: &String, api_key: &String, puuid: &String, region: &String) -> Result<Vec<String>, String> {
         let mut game_ids = Vec::new();
         let start_end = Self::get_time_range(&start, &end).await.unwrap();
         let absolute_server = region.as_str();
@@ -68,9 +64,11 @@ impl IntakeHelper {
     }
 
     pub async fn get_games_utc(start: i64, puuid: &String, region: &String, api_key: &String) -> Result<Vec<String>, String>{
-        let mut game_ids = Vec::new();
-        let now = Utc::now().to_string();
-        let start_end = format!("?startTime={start}&endTime={now}");
+        let mut game_ids: Vec<String> = Vec::new();
+        let now: i64 = Utc::now().timestamp();
+        let start_new: i64 = start / 1000;
+        let start_end = format!("?startTime={}&endTime={}", start_new + 1, now);
+        println!("{start_end}");
         let absolute_server = region.as_str();
         let server = IntakeHelper::get_server(absolute_server).await;
         let resp = reqwest::get (
@@ -83,6 +81,7 @@ impl IntakeHelper {
             .unwrap();
         
         let mut deserialized = Deserializer::from_str(&resp);
+        println!("{resp}");
         Deserialize::deserialize_in_place(&mut deserialized, &mut game_ids).unwrap();
         Ok(game_ids)
     }
@@ -109,12 +108,24 @@ impl IntakeHelper {
         Ok(format!("?startTime={start_unix}&endTime={end_unix}"))
     }
 
+    async fn get_time_range_to_now(start: &String) -> Result<String, String> {
+        let naive_date_start = NaiveDate::parse_from_str(&start, "%Y-%m-%d")
+            .map_err(|e| format!("Failed to parse date: {}", e))?;
+        let start_range = naive_date_start.and_hms_opt(0, 0, 0);
+        let start_unix = match start_range {
+            Some(x) => Utc.from_utc_datetime(&x).timestamp().to_string(),
+            None => "".to_string(),
+        };
+        let now = Utc::now().timestamp().to_string();
+        Ok(format!("?startTime={start_unix}&endTime={now}"))
+    }
+
     pub async fn get_game_data_by_list(ids: Vec<String>, api_key: &String, puuid: &String) -> Result<Vec<FilteredData>, Box<dyn Error>> { //gets game data of all games passed into the function
         println!("{}", "Getting player game data...".green());
         let mut out: Vec<FilteredData> = Vec::new();
         //let mut out: Vec<FilteredData> = self.get_game_data_from_ids(self.game_ids);
         let check_valid_game = |game: &MatchData| -> bool {
-            if game.info.end_of_game_result != "GameComplete" || game.info.game_mode != "CLASSIC" {
+            if game.info.end_of_game_result != "GameComplete" || game.info.game_mode != "CLASSIC" || game.info.game_type != "MATCHED_GAME" {
                 return false;
             }
             true
@@ -182,14 +193,45 @@ impl IntakeHelper {
         Ok(PlayerIdent { puuid: resp.puuid, game_name: resp.game_name, tagline: resp.tag_line, server: String::from(server) })
     }
 
-    pub async fn request_summoner(puuid: &String, _server: &String, api_key: &String) -> Result<Summoner, Box<dyn Error>> {
+    pub async fn request_summoner(puuid: &String, server: &String, api_key: &String) -> Result<Summoner, Box<dyn Error>> {
         let resp = reqwest::get
-            (format!("https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{}?api_key={}", /* server.to_lowercase(), */ puuid, api_key)) //figure out the server for the url. Maybe local match?
+            (format!("https://{}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{}?api_key={}", Self::get_legacy_server(server).await, puuid, api_key)) //figure out the server for the url. Maybe local match?
             .await
             .unwrap()
             .json::<Summoner>()
             .await
             .unwrap();
         Ok(resp)
+    }
+    
+    pub async fn get_server(server: &str) -> &str {
+        match server {
+            "NA" => "americas",
+            "BR" => "americas",
+            "LAS" => "americas",
+            "LAN" => "americas",
+            "KR" => "asia",
+            "JP" => "asia",
+            "EUW" => "europe",
+            "EUNE" => "europe",
+            "ME" => "europe",
+            "TR" => "europe",
+            "RU" => "europe",
+            "OCE" => "sea",
+            "VN" => "sea",
+            "TW" => "sea",
+            &_ => "americas"
+        }
+    }
+    
+    pub async fn get_legacy_server(server: &str) -> &str {
+        match server {
+            "NA" => "na1",
+            "BR" => "br1",
+            "EUW" => "euw1",
+            "EUNE" => "eun1",
+            "OCE" => "oc1",
+            &_ => "na1",
+        }
     }
 }
