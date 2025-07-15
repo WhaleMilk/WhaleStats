@@ -15,7 +15,7 @@ fn greet(name: &str) -> String {
 
 #[tauri::command] 
 async fn load_player_data(player: &str) -> Result<String, ()> { //incoming string should be formatted like "USERNAME_TAG_SERVER" ("WhaleMilk_PHUD_NA")
-    let api_key = String::from("RGAPI-94ec128d-e0c9-47a5-a6e4-ce86d04755d7");
+    let api_key = String::from("");
     //check if we have saved info for player; if we do, load that info instead, if we don't, make new player ident
     let index_file = read_indexed_profiles().unwrap();
     let location = format!("./profiles/{}.json", player);

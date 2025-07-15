@@ -127,7 +127,7 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
 
         async move {
             let chart = gen_chart(local, name);
-            let renderer = WasmRenderer::new(400, 250).theme(Theme::Dark);
+            let renderer = WasmRenderer::new(500, 300).theme(Theme::Dark);
             renderer.render(name, &chart).unwrap();
         }
     });
@@ -177,7 +177,9 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
     {move || match load_data.get() {
         Some(_data) => {
             view! {
-                <button on:click=move |_| { let _ = refresh.dispatch(()); }>"Refresh"</button>
+                <div class = "refresh_button">
+                    <button on:click=move |_| { let _ = refresh.dispatch(()); }>"Refresh"</button>
+                </div>
                 <div class = "graph_container">
                     <div><div id="GD@15" class="chart"></div> </div>
                     <div><div id="CS/M" class="chart"></div> </div>

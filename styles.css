@@ -112,9 +112,22 @@ button {
 }
 
 .graph_container {
-  height: 500px;
-  width: 1200px;
-  margin: 20px;
+  height: 80%;
+  width: 70%;
+  margin: 2em;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  border: 3px solid green;
+}
+
+.chart {
+  height: 22%;
+  width: 22%;
+  margin: 1.5em;
+}
+
+.refresh_button {
+  float: right;
+  padding: 1em;
+  border: 3px solid green;
 }
