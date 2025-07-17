@@ -6,6 +6,13 @@ use std::path::Path;
 use chrono::{Days, Utc};
 use serde::{Serialize, Deserialize};
 use analyzer_core::intake::IntakeHelper;
+use dotenv::dotenv;
+
+//gets Riot Games API token from a .env file
+fn get_api_key() -> String {
+    dotenv().ok();
+    std::env::var("API_TOKEN").expect("API_TOKEN not set in .env file")
+}
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -15,7 +22,7 @@ fn greet(name: &str) -> String {
 
 #[tauri::command] 
 async fn load_player_data(player: &str) -> Result<String, ()> { //incoming string should be formatted like "USERNAME_TAG_SERVER" ("WhaleMilk_PHUD_NA")
-    let api_key = String::from("");
+    let api_key = get_api_key();
     //check if we have saved info for player; if we do, load that info instead, if we don't, make new player ident
     let index_file = read_indexed_profiles().unwrap();
     let location = format!("./profiles/{}.json", player);
@@ -71,7 +78,7 @@ async fn load_player_data(player: &str) -> Result<String, ()> { //incoming strin
 
 #[tauri::command]
 async fn reload_profile_data(timestamp: i64, player: &str) -> Result<bool, ()> { //special types of argument structures need to be pased in for enty commands
-    let api_key = String::from("RGAPI-94ec128d-e0c9-47a5-a6e4-ce86d04755d7");
+    let api_key = get_api_key();
     println!("Reloading profile data for {}", player);
     let location = format!("./profiles/{}.json", player);
     let path = Path::new(location.as_str());

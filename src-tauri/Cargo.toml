@@ -26,4 +26,5 @@ charming = {version = "0.4.0", features = ["wasm"] }
 analyzer-core = {version = "0.1.0", path = "../analyzer-core"}
 tauri-plugin-fs = "2"
 chrono = "0.4.38"
+dotenv = "0.15.0"
 
