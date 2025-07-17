@@ -13,8 +13,6 @@ pub struct StartData {
     pub puuid: String,
     pub start_date: String,
     pub end_date: String,
-    #[serde(rename = "summonerID")]
-    pub summoner_id: String,
     pub region: String,
 }
 

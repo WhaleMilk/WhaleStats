@@ -15,7 +15,8 @@ pub struct FilteredData{
     pub kp: [(f32, f32); 5],
     pub champs: [(String, String); 5],
     pub win_loss: (bool, bool),
-    pub game_start: i64
+    pub game_start: i64,
+    pub game_end: i64
 } //data ideas: death impact (record each death and somehow quantify the qualtiy of that death), map presence, items, runes, ganking, vision, 
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -44,6 +45,8 @@ pub enum Position{
 impl FilteredData {
     pub fn new(game_data: &MatchData, game_tl: &Timeline) -> FilteredData {
         let start = game_data.info.game_start_timestamp;
+        //let end = start + game_data.info.game_duration as i64;
+        let end = game_data.info.game_end_timestamp;
         FilteredData {
             pids: Self::filter_pids(&game_data),
             me: Me::default(),//(10, 2),
@@ -53,7 +56,8 @@ impl FilteredData {
             kp: Self::filter_kp(&game_data),
             champs: Self::filter_champs(&game_data),
             win_loss: Self::find_wl(&game_data),
-            game_start: start
+            game_start: start,
+            game_end: end
         }
     }
 

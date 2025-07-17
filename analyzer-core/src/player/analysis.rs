@@ -6,6 +6,7 @@ use serde_derive::{Deserialize, Serialize};
 pub struct GameStatistics{
     puuid: String,
     pub game_start: i64,
+    pub game_end: i64,
     pub position: Position,
     pub champion: String,
     pub gd15: i32,
@@ -23,6 +24,7 @@ impl Player {
         return GameStatistics {
             puuid: self.start.puuid.clone(),
             game_start: game.game_start,
+            game_end: game.game_end,
             gd15: self.calc_gd(game, &pos, &side),
             csm: self.find_csm(game, &pos, &side),
             dpm: self.find_dpm(game, &pos, &side),

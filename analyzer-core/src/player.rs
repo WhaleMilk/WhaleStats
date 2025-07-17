@@ -1,5 +1,5 @@
 use analysis::GameStatistics;
-use owo_colors::OwoColorize;
+//use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 use crate::intake::data_filter::FilteredData;
 use crate::intake::IntakeHelper;
@@ -23,8 +23,6 @@ pub struct PlayerIdent {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Summoner {
-    pub id: String,
-    pub account_id: String,
     pub puuid: String,
     pub profile_icon_id: i64,
     pub revision_date: i64,
@@ -41,13 +39,12 @@ impl Player {
 
     //we need: load data in from vec, load data from servers, process games from server
     pub async fn get_recent_game_ids(&mut self, new_player: bool) -> Result<Vec<String>, String> {
-        let mut games = Vec::<String>::new();
         if new_player {
-            games = IntakeHelper::get_games_fresh(&self.start.start_date, &self.start.api_key, &self.start.puuid, &self.start.region).await.unwrap();
+            let games = IntakeHelper::get_games_fresh(&self.start.start_date, &self.start.api_key, &self.start.puuid, &self.start.region).await.unwrap();
             //self.games_played = games;
             Ok(games)
         } else {
-            games = IntakeHelper::get_games_start_end(&self.start.start_date, &self.start.end_date, &self.start.api_key, &self.start.puuid, &self.start.region).await.unwrap();
+            let games = IntakeHelper::get_games_start_end(&self.start.start_date, &self.start.end_date, &self.start.api_key, &self.start.puuid, &self.start.region).await.unwrap();
             Ok(games)
         }
     } 

@@ -110,7 +110,7 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
             csm.push(game.csm as f64);
             dpm.push(game.dpm as f64);
             kp.push(game.kp as f64);
-            last_start = game.game_start;
+            last_start = game.game_end + 1;
         }
 
         Plots {gd: gd, csm: csm, dpm: dpm, kp: kp, last_game: last_start}
