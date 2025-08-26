@@ -62,6 +62,12 @@ pub struct Game{
     raw_data: RawData,
 }
 
+impl Game{
+    pub fn new(graph: GraphData, raw: RawData) -> Game {
+        Game { graph_data: graph, raw_data: raw }
+    }
+}
+
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Games{
     games: Vec<Game>
