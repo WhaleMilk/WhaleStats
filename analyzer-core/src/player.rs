@@ -38,14 +38,17 @@ impl Player {
         }
     }
 
-    pub fn load_new_player(&mut self, start_data: StartData) {
+    pub async fn load_new_player(&mut self, start_data: StartData) {
+        self.start_data = start_data.clone();
+        let game_ids = self.interface.get_game_ids(&self.start_data.start_date, &self.start_data.puuid).await.unwrap();
+        
         todo!()
         //1) load start data into struct
         //2) get 15 most recent games (or last 24 hours)
         //3) 
     }
 
-    pub fn load_indexed_player(&mut self, start_data: StartData, indexed_games_as_string: String) {
+    pub async fn load_indexed_player(&mut self, start_data: StartData, indexed_games_as_string: String) {
         todo!()
         //get game data as a save
         //deserialize indexed_games_as_string into save variable, load that relevant data into player
