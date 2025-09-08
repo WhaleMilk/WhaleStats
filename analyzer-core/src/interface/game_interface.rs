@@ -23,26 +23,6 @@ impl Interface {
     }
 
     pub async fn get_match_data_collection(&self, ids: Vec<String>, puuid: &String) -> Result<Vec<RawData>, Box<dyn Error>> {
-        // println!("{}", "Getting player game data...".green());
-        // let mut out: Vec<FilteredData> = Vec::new();
-        // //let mut out: Vec<FilteredData> = self.get_game_data_from_ids(self.game_ids);
-        // let check_valid_game = |game: &MatchData| -> bool {
-        //     if game.info.end_of_game_result != "GameComplete" || game.info.game_mode != "CLASSIC" || game.info.game_type != "MATCHED_GAME" {
-        //         return false;
-        //     }
-        //     true
-        // };
-        
-        // for id in &ids {
-        //     let game = IntakeHelper::request_game_data(&id, &api_key).await.unwrap();
-        //     if check_valid_game(&game) {
-        //         let tl = Self::request_match_timeline(&id, &api_key).await.unwrap();
-        //         let mut filtered = FilteredData::new(&game, &tl);
-        //         filtered.find_me(&puuid);
-        //         out.push(filtered);
-        //     }
-        // }
-        // Ok(out)
         let mut out: Vec<RawData> = Vec::new();
         let check_valid_game = |game: &MatchData| -> bool {
             if game.info.end_of_game_result != "GameComplete" || game.info.game_mode != "CLASSIC" || game.info.game_type != "MATCHED_GAME" {

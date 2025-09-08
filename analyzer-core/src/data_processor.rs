@@ -63,7 +63,7 @@ pub struct Game{
 }
 
 impl Game{
-    pub fn new(graph: GraphData, raw: RawData) -> Game {
+    pub async fn new(graph: GraphData, raw: RawData) -> Game {
         Game { graph_data: graph, raw_data: raw }
     }
 }
@@ -74,9 +74,53 @@ pub struct Games{
 }
 
 impl Games {
-    pub fn new() -> Games {
-        Games{ 
-            games: Vec::<Game>::new(),
+    pub async fn new(raw_data: Vec<RawData>) -> Games {
+        //for each item in raw_data, generate a relevant graph data vec, then insert into game vec
+        let mut games = Vec::<Game>::new();
+        for data in raw_data {
+            let game_graph_data = Games::pull_graph_data(&data).await;
+            games.push(Game::new(game_graph_data, data).await);
         }
+        Games{ 
+            games: games
+        }
+    }
+
+    pub async fn pull_graph_data(data: &RawData) -> GraphData {
+        
+        // GraphData {
+        //     puuid: 
+        // }
+        todo!();
+    }
+
+    async fn calc_gd(&self, game: &RawData, pos: &Position, side: &Side) -> i32 {
+        todo!()
+    }
+    
+    async fn find_csm(&self, game: &RawData, pos: &Position, side: &Side) -> f32 {
+        todo!()
+    }
+
+    async fn find_dpm(&self, game: &RawData, pos: &Position, side: &Side) -> f32 {
+        todo!()
+    }
+    
+    async fn find_kp(&self, game: &RawData, pos: &Position, side: &Side) -> f32 {
+        todo!()
+    }
+    
+    async fn find_wl(&self, game: &RawData, pos: &Position, side: &Side) -> bool {
+        todo!()
+    }
+
+    fn get_index_from_pos(pos: &Position) -> usize {
+        return match pos {
+            Position::TOP => 0,
+            Position::JUNGLE => 1,
+            Position::MIDDLE => 2,
+            Position::BOTTOM => 3,
+            Position::SUPPORT => 4
+        };
     }
 }

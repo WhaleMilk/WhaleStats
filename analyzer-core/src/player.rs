@@ -29,10 +29,10 @@ pub struct Summoner {
 
 impl Player {
     pub async fn new(raw_username: &str, api_key: String) -> Player {
-        let mut inter = Interface::new(api_key.clone()).await;
+        let mut inter = Interface::new(&api_key).await;
         Player {
             ident: inter.gen_player_ident_from_string(raw_username).await,
-            start_data: StartData { api_key: api_key, puuid: String::default(), start_date: String::default(), region: String::default() },
+            start_data: StartData { api_key: api_key, puuid: String::default(), start_date: 0, region: String::default() },
             games: Games::default(),
             interface: inter,
         }
@@ -40,12 +40,16 @@ impl Player {
 
     pub async fn load_new_player(&mut self, start_data: StartData) {
         self.start_data = start_data.clone();
-        let game_ids = self.interface.get_game_ids(&self.start_data.start_date, &self.start_data.puuid).await.unwrap();
+        let game_ids = self.interface.get_game_ids(&self.start_data.start_date.clone().to_string(), &self.start_data.puuid).await.unwrap();
+        //check if we have fewer than 15 games, then check again with backed up timestamp
+
+        let interface = Interface::new(&self.start_data.api_key).await;
+        let raw_data = interface.get_match_data_collection(game_ids, &self.start_data.puuid).await.unwrap();
         
         todo!()
-        //1) load start data into struct
-        //2) get 15 most recent games (or last 24 hours)
-        //3) 
+        //1) Create Games struct that loads games
+        //2) pass in game ids to Games which then creates our struct natively
+        //3)  
     }
 
     pub async fn load_indexed_player(&mut self, start_data: StartData, indexed_games_as_string: String) {

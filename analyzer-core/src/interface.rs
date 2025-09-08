@@ -14,9 +14,9 @@ pub struct Interface {
 }
 
 impl Interface {
-    pub async fn new(api_key: String) -> Interface {
+    pub async fn new(api_key: &String) -> Interface {
         Interface {
-            api_key: api_key,
+            api_key: api_key.clone(),
             server: String::default(),
         }
     }

@@ -9,6 +9,6 @@ pub struct StartData {
     pub api_key: String,
     #[serde(rename = "PUUID")]
     pub puuid: String,
-    pub start_date: String,
+    pub start_date: i64,
     pub region: String,
 }
