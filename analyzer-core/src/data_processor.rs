@@ -6,7 +6,7 @@ use crate::interface::timeline::Timeline;
 
 pub mod filter;
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct GraphData{
     puuid: String,
     pub game_start: i64,
@@ -20,7 +20,7 @@ pub struct GraphData{
     pub wl: bool
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RawData {
     pub pids: [(String, String); 5],
     pub me: Me, 
@@ -33,20 +33,20 @@ pub struct RawData {
     pub game_end: i64
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Me{
     pub side: Side,
     pub champ: String,
     pub pos: Position,
 }
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Side{
     #[default]
     BLUE,
     RED
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Position{
     #[default]
     TOP,
