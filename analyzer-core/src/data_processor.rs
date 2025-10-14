@@ -87,31 +87,70 @@ impl Games {
     }
 
     pub async fn pull_graph_data(data: &RawData) -> GraphData {
-        
-        // GraphData {
-        //     puuid: 
-        // }
-        todo!();
+        let side= data.me.side.clone();
+        let p_index = Self::get_index_from_pos(&data.me.pos);
+        let id = match side {
+            Side::BLUE => &data.pids[p_index].0,
+            Side::RED => &data.pids[p_index].1
+        };
+
+        GraphData {
+            puuid: id.to_string(),
+            game_start: data.game_end.clone(),
+            game_end: data.game_end.clone(),
+            position: data.me.pos.clone(),
+            champion: data.me.champ.clone(),
+            gd15: Self::calc_gd(&data, &side, &p_index).await,
+            csm: Self::find_csm(&data, &side, &p_index).await,
+            dpm: Self::find_dpm(&data, &side, &p_index).await,
+            kp: Self::find_kp( &data, &side, &p_index).await,
+            wl: Self::find_wl(&data, &side, &p_index).await
+        }
+        //todo!();
     }
 
-    async fn calc_gd(&self, game: &RawData, pos: &Position, side: &Side) -> i32 {
-        todo!()
+    async fn calc_gd(game: &RawData, side: &Side, p_index: &usize) -> i32 {
+        let gd = match side {
+            Side::BLUE => game.g15[*p_index].0 - game.g15[*p_index].1,
+            Side::RED => game.g15[*p_index].1 - game.g15[*p_index].0,
+        };
+        return gd
     }
     
-    async fn find_csm(&self, game: &RawData, pos: &Position, side: &Side) -> f32 {
-        todo!()
+    async fn find_csm(game: &RawData, side: &Side, p_index: &usize) -> f32 {
+        let csm = match side {
+            Side::BLUE => game.csm[*p_index].0,
+            Side::RED => game.csm[*p_index].1
+        };
+
+        return csm;
     }
 
-    async fn find_dpm(&self, game: &RawData, pos: &Position, side: &Side) -> f32 {
-        todo!()
+    async fn find_dpm(game: &RawData, side: &Side, p_index: &usize) -> f32 {
+        let dpm = match side{
+            Side::BLUE => game.dpm[*p_index].0,
+            Side::RED => game.dpm[*p_index].1
+        };
+
+        return dpm
     }
     
-    async fn find_kp(&self, game: &RawData, pos: &Position, side: &Side) -> f32 {
-        todo!()
+    async fn find_kp(game: &RawData, side: &Side, p_index: &usize) -> f32 {
+        let kp = match side{
+            Side::BLUE => game.kp[*p_index].0,
+            Side::RED => game.kp[*p_index].1
+        };
+
+        return kp
     }
     
-    async fn find_wl(&self, game: &RawData, pos: &Position, side: &Side) -> bool {
-        todo!()
+    async fn find_wl(game: &RawData, side: &Side, p_index: &usize) -> bool {
+        let wl = match side {
+            Side::BLUE => game.win_loss.0,
+            Side::RED => game.win_loss.1,
+        };
+
+        return wl
     }
 
     fn get_index_from_pos(pos: &Position) -> usize {

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::interface::match_data::MatchData;
 use crate::interface::timeline::Timeline;
 use crate::player::PlayerIdent;
@@ -8,6 +10,7 @@ pub mod ranked_data;
 pub mod user_interface;
 pub mod game_interface;
 
+#[derive(Deserialize, Serialize)]
 pub struct Interface {
     api_key: String,
     server: String,
