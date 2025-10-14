@@ -44,7 +44,7 @@ impl Player {
         let game_ids = self.interface.get_game_ids(&self.start_data.start_date.clone().to_string(), &self.start_data.puuid).await.unwrap();
         //check if we have fewer than 15 games, then check again with backed up timestamp
 
-        let interface = Interface::new(&self.start_data.api_key).await;
+        self.interface = Interface::new(&self.start_data.api_key).await;
         
         self.games = Games::new(interface.get_match_data_collection(game_ids, &self.start_data.puuid).await.unwrap()).await;
     }
