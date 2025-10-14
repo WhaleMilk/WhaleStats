@@ -46,7 +46,7 @@ impl Player {
 
         self.interface = Interface::new(&self.start_data.api_key).await;
         
-        self.games = Games::new(interface.get_match_data_collection(game_ids, &self.start_data.puuid).await.unwrap()).await;
+        self.games = Games::new(self.interface.get_match_data_collection(game_ids, &self.start_data.puuid).await.unwrap()).await;
     }
 
     pub async fn load_indexed_player(start_data: StartData, player_as_string: String) -> Player {
