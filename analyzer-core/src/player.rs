@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use chrono::Utc;
 use crate::{player, StartData};
 use crate::data_processor::Games;
 use crate::interface::Interface;
@@ -31,16 +32,18 @@ pub struct Summoner {
 impl Player {
     pub async fn new(raw_username: &str, api_key: String) -> Player {
         let mut inter = Interface::new(&api_key).await;
+        let start_of_day = Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap()
+                .and_local_timezone(Utc).unwrap().timestamp_millis();
+        let ident = inter.gen_player_ident_from_string(raw_username).await;
         Player {
-            ident: inter.gen_player_ident_from_string(raw_username).await,
-            start_data: StartData { api_key: api_key, puuid: String::default(), start_date: 0, region: String::default() },
+            ident: ident.clone(),
+            start_data: StartData { api_key: api_key, puuid: ident.summoner.puuid.clone(), start_date: start_of_day, region: ident.server.clone() },
             games: Games::default(),
             interface: inter,
         }
     }
 
-    pub async fn load_new_player(&mut self, start_data: StartData) {
-        self.start_data = start_data.clone();
+    pub async fn load_new_player(&mut self) {
         let game_ids = self.interface.get_game_ids(&self.start_data.start_date.clone().to_string(), &self.start_data.puuid).await.unwrap();
         //TODO: check if we have fewer than 15 games, then check again with backed up timestamp
 
@@ -64,5 +67,9 @@ impl Player {
         todo!()
         //probe the API for any new games, and then load those in if they exist. 
         //Drop recent games if its over max game size
+    }
+
+    pub async fn get_player(self) -> Player {
+        self
     }
 }
