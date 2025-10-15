@@ -54,8 +54,6 @@ fn get_api_key() -> String {
     #[tauri::command]
     async fn load_player_data(raw_user: &str) -> Result<String, ()> { //incoming string requires "USERNAME_TAG_SERVER" ("WhaleMilk_PHUD_NA") formatting
         let api_key = get_api_key();
-        let start_of_day = Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap()
-                .and_local_timezone(Utc).unwrap().timestamp_millis();
         let index_file = read_indexed_profiles().unwrap();
         let l = format!("./profiles/{}.json", raw_user);
         let path = Path::new(l.as_str());
@@ -70,12 +68,13 @@ fn get_api_key() -> String {
             false => {
                 update_index_file(raw_user).unwrap();
                 File::create(format!("./profiles/{}.json", raw_user)).unwrap();
-                let mut p = Player::new(raw_user, api_key).await;
-                p.load_new_player();
-                p.get_player().await
-                //create new player
+                Player::new(raw_user, api_key).await.get_player().await
             }
         };
+        
+        if save.is_empty_games() {
+            todo!();
+        }
         todo!()
     }
 

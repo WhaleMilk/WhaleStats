@@ -86,6 +86,10 @@ impl Games {
         }
     }
 
+    pub async fn is_empty(self) -> bool {
+        self.games.is_empty()
+    }
+
     pub async fn pull_graph_data(data: &RawData) -> GraphData {
         let side= data.me.side.clone();
         let p_index = Self::get_index_from_pos(&data.me.pos);

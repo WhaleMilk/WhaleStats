@@ -69,7 +69,15 @@ impl Player {
         //Drop recent games if its over max game size
     }
 
+    pub async fn set_api(&mut self, api_key: String) {
+        self.start_data.api_key = api_key;
+    }
+
     pub async fn get_player(self) -> Player {
         self
+    }
+
+    pub async fn is_empty_games(self) -> bool {
+        self.games.is_empty()
     }
 }
