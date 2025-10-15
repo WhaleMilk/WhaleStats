@@ -55,7 +55,8 @@ fn get_api_key() -> String {
     async fn command_name(player: &str) -> Result<String, ()> { //incoming string requires "USERNAME_TAG_SERVER" ("WhaleMilk_PHUD_NA") formatting
         let api_key = get_api_key();
         let index_file = read_indexed_profiles().unwrap();
-        let path = Path::new(format!("./profiles/{}.json", player).as_str());
+        let l = format!("./profiles/{}.json", player);
+        let path = Path::new(l.as_str());
         let mut player_profile = String::new();
 
         let mut save = match index_file.iter().any(|e| e == player) {
