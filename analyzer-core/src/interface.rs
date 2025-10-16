@@ -10,7 +10,7 @@ pub mod ranked_data;
 pub mod user_interface;
 pub mod game_interface;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Interface {
     api_key: String,
     server: String,

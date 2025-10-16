@@ -49,11 +49,9 @@ fn get_api_key() -> String {
 //     Ok(())
 // }
 
-// /* COMMAND FUNCTIONS */
-    // remember to call `.manage(MyState::default())`
+/* COMMAND FUNCTIONS */
     #[tauri::command]
     async fn load_player_data(raw_user: &str) -> Result<String, ()> { //incoming string requires "USERNAME_TAG_SERVER" ("WhaleMilk_PHUD_NA") formatting
-        let api_key = get_api_key();
         let index_file = read_indexed_profiles().unwrap();
         let l = format!("./profiles/{}.json", raw_user);
         let path = Path::new(l.as_str());
@@ -68,13 +66,25 @@ fn get_api_key() -> String {
             false => {
                 update_index_file(raw_user).unwrap();
                 File::create(format!("./profiles/{}.json", raw_user)).unwrap();
-                Player::new(raw_user, api_key).await.get_player().await
+                Player::new(raw_user, get_api_key()).await.get_player().await
             }
         };
         
-        if save.is_empty_games() {
-            todo!();
+        if save.is_empty_games().await {
+            //load starting data for new player
+            save.load_new_player().await; 
+        } else {
+            //load in existing data into player object, then load new games. 
+            save.set_api(get_api_key()).await;
+            save.load_new_games().await; 
         }
+        let mut player_file = OpenOptions::new().write(true).open(path).unwrap();
+        player_file.write(serde_json::to_string(&save).unwrap().as_bytes()).unwrap();
+        Ok(serde_json::to_string(&save.games).unwrap())
+    }
+
+    #[tauri::command]
+    async fn reload_profile_data(timestamp: i64, player: &str) -> Result<bool, ()> {
         todo!()
     }
 
@@ -108,7 +118,6 @@ fn get_api_key() -> String {
 //             Save::new(player_iden, summoner, last_calc)
 //         }
 //     };
-    
 //     let start = StartData {
 //         api_key: api_key,
 //         puuid: save.info.player.puuid.clone(),
@@ -202,7 +211,7 @@ fn get_api_key() -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![query_games_test, load_player_data, reload_profile_data])
+        .invoke_handler(tauri::generate_handler![load_player_data, reload_profile_data])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

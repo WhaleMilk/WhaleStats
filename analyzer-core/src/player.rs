@@ -4,7 +4,7 @@ use crate::{player, StartData};
 use crate::data_processor::Games;
 use crate::interface::Interface;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Player {
     pub ident: PlayerIdent,
     pub start_data: StartData,
@@ -73,11 +73,11 @@ impl Player {
         self.start_data.api_key = api_key;
     }
 
-    pub async fn get_player(self) -> Player {
-        self
+    pub async fn get_player(&self) -> Player {
+        self.clone()
     }
 
-    pub async fn is_empty_games(self) -> bool {
-        self.games.is_empty()
+    pub async fn is_empty_games(&self) -> bool {
+        self.clone().games.is_empty().await
     }
 }
