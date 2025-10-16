@@ -58,8 +58,8 @@ pub enum Position{
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Game{
-    graph_data: GraphData,
-    raw_data: RawData,
+    pub graph_data: GraphData,
+    pub raw_data: RawData,
 }
 
 impl Game{
@@ -70,7 +70,7 @@ impl Game{
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Games{
-    games: Vec<Game>
+    pub games: Vec<Game>
 }
 
 impl Games {

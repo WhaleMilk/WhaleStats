@@ -1,13 +1,15 @@
-mod app_re;
+mod landing;
+mod entry;
+mod stats_page;
 
-use app_re::*;
+use entry::*;
 use leptos::prelude::*;
 
 fn main() {
     console_error_panic_hook::set_once();
     mount_to_body(|| {
         view! {
-            <App_Re/>
+            <Entry/>
         }
     })
 }
