@@ -10,6 +10,7 @@ pub struct Player {
     pub start_data: StartData,
     pub games: Games,
     pub interface: Interface,
+    pub max_games: usize
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone, PartialEq)]
@@ -40,33 +41,59 @@ impl Player {
             start_data: StartData { api_key: api_key, puuid: ident.summoner.puuid.clone(), start_date: start_of_day, region: ident.server.clone() },
             games: Games::default(),
             interface: inter,
+            max_games: 30
         }
     }
 
     pub async fn load_new_player(&mut self) {
-        let game_ids = self.interface.get_game_ids(&self.start_data.start_date.clone().to_string(), &self.start_data.puuid).await.unwrap();
+        let mut time = self.start_data.start_date.clone();
+        let mut game_ids = self.interface.get_game_ids(&time.to_string(), &self.start_data.puuid).await.unwrap();
         //TODO: check if we have fewer than 15 games, then check again with backed up timestamp
+        let mut count = 0;
+        while game_ids.len() < 15 {
+            time -= 86400000;
+            if count > 30 { break; }
+            count += 1;
+            game_ids = self.interface.get_game_ids(&time.to_string(), &self.start_data.puuid).await.unwrap();
+        }
 
         self.interface = Interface::new(&self.start_data.api_key).await;
         
         self.games = Games::new(self.interface.get_match_data_collection(game_ids, &self.start_data.puuid).await.unwrap()).await;
     }
 
-    pub async fn load_indexed_player(start_data: StartData, player_as_string: String) -> Player {
+    pub async fn load_indexed_player(api_key: String, player_as_string: String) -> Player {
         let save: Player = serde_json::from_str(&player_as_string).unwrap();
-        let mut inter = Interface::new(&start_data.api_key).await;
+        let mut inter = Interface::new(&api_key).await;
         Player {
             ident: save.ident,
-            start_data: start_data.clone(),
+            start_data: save.start_data,
             games: save.games,
             interface: inter,
+            max_games: 30
         }
     }
 
-    pub async fn load_new_games(&mut self) {
-        todo!()
-        //probe the API for any new games, and then load those in if they exist. 
+    pub async fn load_new_games(&mut self) -> bool {
+        let new_games = self.interface.get_game_ids(&self.games.last_game_end().await.to_string(), &self.start_data.puuid).await.unwrap();
+        if !new_games.is_empty() {
+            self.games.append_games(self.interface.get_match_data_collection(new_games, &self.start_data.puuid).await.unwrap()).await;
+            return true
+        }
+        self.trim_games().await;
+        self.sort_games().await;
+        return false
         //Drop recent games if its over max game size
+    }
+
+    async fn trim_games(&mut self) {
+        if self.games.length().await > self.max_games {
+            self.games.trim_to_length(self.max_games).await;
+        }
+    }
+
+    pub async fn sort_games(&mut self) {
+        self.games.sort_games().await;
     }
 
     pub async fn set_api(&mut self, api_key: String) {

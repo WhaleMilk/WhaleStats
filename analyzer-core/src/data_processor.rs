@@ -96,6 +96,22 @@ impl Games {
         }
     }
 
+    pub async fn last_game_end(&self) -> i64 {
+        self.games.last().unwrap().graph_data.game_end
+    }
+
+    pub async fn length(&self) -> usize {
+        self.games.len()
+    }
+
+    pub async fn trim_to_length(&mut self, length: usize) {
+        self.games.drain(.. (self.games.len() - (self.games.len() - length) - 1));
+    }
+
+    pub async fn sort_games(&mut self) {
+        self.games.sort_by(|v1, v2| v1.graph_data.game_start.cmp(&v2.graph_data.game_start));
+    }
+
     pub async fn pull_graph_data(data: &RawData) -> GraphData {
         let side= data.me.side.clone();
         let p_index = Self::get_index_from_pos(&data.me.pos);

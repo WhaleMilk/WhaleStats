@@ -55,7 +55,20 @@ fn get_api_key() -> String {
 
     #[tauri::command]
     async fn reload_profile_data(timestamp: i64, player: &str) -> Result<bool, ()> {
-        todo!()
+        let location = format!("./profiles/{}.json", player);
+        let path = Path::new(location.as_str());
+        let mut player_profile_str = String::new();
+        let mut player_file = OpenOptions::new().read(true).open(path).unwrap();
+        let _ = player_file.read_to_string(&mut player_profile_str);
+
+        let mut player = Player::load_indexed_player(get_api_key(), player_profile_str).await;
+        player.set_api(get_api_key()).await;
+        if player.load_new_games().await{
+            let mut player_file = OpenOptions::new().write(true).truncate(true).open(path).unwrap();
+            player_file.write(serde_json::to_string(&player).unwrap().as_bytes()).unwrap();
+            return Ok(true)
+        }
+        Ok(false)
     }
 
 // #[tauri::command]
