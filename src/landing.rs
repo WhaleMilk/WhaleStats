@@ -1,8 +1,5 @@
 use leptos::{ev::SubmitEvent, html::{Select, Input}, prelude::*};
 
-use crate::entry::*;
-use crate::stats_page::*;
-
 #[component]
 pub fn Landing(set_puuid: WriteSignal<String>, read_puuid: ReadSignal<String>) -> impl IntoView {
     let set_current_comp = use_context::<WriteSignal<String>>().expect("Did not find setter");

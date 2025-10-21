@@ -89,6 +89,12 @@ impl Games {
     pub async fn is_empty(self) -> bool {
         self.games.is_empty()
     }
+    
+    pub async fn append_games(&mut self, raw_data: Vec<RawData>) {
+        for data in raw_data {
+            self.games.push(Game::new(Games::pull_graph_data(&data).await, data).await);
+        }
+    }
 
     pub async fn pull_graph_data(data: &RawData) -> GraphData {
         let side= data.me.side.clone();
