@@ -33,6 +33,7 @@ pub struct Summoner {
 impl Player {
     pub async fn new(raw_username: &str, api_key: String) -> Player {
         let mut inter = Interface::new(&api_key).await;
+        println!("Creating new player {}", raw_username);
         let start_of_day = Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap()
                 .and_local_timezone(Utc).unwrap().timestamp_millis();
         let ident = inter.gen_player_ident_from_string(raw_username).await;
@@ -83,7 +84,6 @@ impl Player {
             return true
         }
         return false
-        //Drop recent games if its over max game size
     }
 
     async fn trim_games(&mut self) {

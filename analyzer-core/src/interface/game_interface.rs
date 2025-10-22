@@ -12,11 +12,14 @@ impl Interface {
     pub async fn get_game_ids(&self, start_timestamp: &String, puuid: &String) -> Result<Vec<String>, Box<dyn Error>> {
         //todo!();
         let mut ids = Vec::new();
+        println!("https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}api_key={}",
+                self.server, puuid, start_timestamp, self.api_key);
         let resp = reqwest::get(
             format!(
-                "https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids{}api_key={}",
+                "https://{}.api.riotgames.com/lol/match/v5/matches/by-puuid/{}/ids?startTime={}&api_key={}",
                 self.server, puuid, start_timestamp, self.api_key)
             ).await.unwrap().text().await.unwrap();
+        println!("{}", resp);
         let mut deserializer = Deserializer::from_str(&resp);
         Deserialize::deserialize_in_place(&mut deserializer, &mut ids).unwrap();
         Ok(ids)

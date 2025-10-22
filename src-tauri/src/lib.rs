@@ -22,6 +22,7 @@ fn get_api_key() -> String {
 /* COMMAND FUNCTIONS */
     #[tauri::command]
     async fn load_player_data(raw_user: &str) -> Result<String, ()> { //incoming string requires "USERNAME_TAG_SERVER" ("WhaleMilk_PHUD_NA") formatting
+        println!("Loading player data...");
         let index_file = read_indexed_profiles().unwrap();
         let l = format!("./profiles/{}.json", raw_user);
         let path = Path::new(l.as_str());
@@ -34,6 +35,7 @@ fn get_api_key() -> String {
                 serde_json::from_str(&player_profile).unwrap()
             }
             false => {
+                println!("No player {} found, creating...", raw_user);
                 update_index_file(raw_user).unwrap();
                 File::create(format!("./profiles/{}.json", raw_user)).unwrap();
                 Player::new(raw_user, get_api_key()).await.get_player().await

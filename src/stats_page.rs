@@ -13,7 +13,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use leptos::prelude::*;
 
-use analyzer_core::data_processor::Games;
+use analyzer_core::data_processor::{Games, Game};
 
 #[wasm_bindgen]
 extern "C" {
@@ -23,7 +23,7 @@ extern "C" {
 
 #[derive(Serialize, Deserialize)]
 struct QueryArgs<'a> {
-    player: &'a str,
+    rawUser: &'a str,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -71,7 +71,7 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
 
     //async lambda that fetches the data from the backend by running the appropriate command
     let fetch_data = async move |puuid: String| -> Plots {
-        let args = serde_wasm_bindgen::to_value(&QueryArgs {player: &puuid}).unwrap();
+        let args = serde_wasm_bindgen::to_value(&QueryArgs {rawUser: &puuid}).unwrap();
         let data = invoke("load_player_data", args).await.as_string().unwrap();
         let deserialized: Games = serde_json::from_str(&data).unwrap();
         let mut last_start: i64 = 0;
@@ -140,7 +140,6 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
                 render.dispatch(GraphTypes::KP);
             }
         });
-
         ready(())
     });
 
