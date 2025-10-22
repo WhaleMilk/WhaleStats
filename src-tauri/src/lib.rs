@@ -54,7 +54,7 @@ fn get_api_key() -> String {
     }
 
     #[tauri::command]
-    async fn reload_profile_data(timestamp: i64, player: &str) -> Result<bool, ()> {
+    async fn reload_profile_data(player: &str) -> Result<bool, ()> {
         let location = format!("./profiles/{}.json", player);
         let path = Path::new(location.as_str());
         let mut player_profile_str = String::new();

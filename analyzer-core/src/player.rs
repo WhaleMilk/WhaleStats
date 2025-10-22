@@ -78,10 +78,10 @@ impl Player {
         let new_games = self.interface.get_game_ids(&self.games.last_game_end().await.to_string(), &self.start_data.puuid).await.unwrap();
         if !new_games.is_empty() {
             self.games.append_games(self.interface.get_match_data_collection(new_games, &self.start_data.puuid).await.unwrap()).await;
+            self.trim_games().await;
+            self.sort_games().await;
             return true
         }
-        self.trim_games().await;
-        self.sort_games().await;
         return false
         //Drop recent games if its over max game size
     }
