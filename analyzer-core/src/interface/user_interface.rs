@@ -14,11 +14,11 @@ impl Interface {
             pub tag_line: String
         } 
         let account = reqwest::get
-            (format!("https://{}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{}/{}?api_key={}", self.server, game_name, tagline, self.api_key))
+            (format!("https://{}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{}/{}?api_key={}", &self.server, game_name, tagline, self.api_key))
             .await.unwrap().json::<Account>().await.unwrap(); 
 
         let summ = reqwest::get
-            (format!("https://{}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{}?api_key={}", Self::get_legacy_server(self.server.as_str()).await, account.puuid, self.api_key)) //figure out the server for the url. Maybe local match?
+            (format!("https://{}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{}?api_key={}", Self::get_legacy_server(&self.server.as_str()).await, account.puuid, self.api_key)) //figure out the server for the url. Maybe local match?
             .await
             .unwrap()
             .json::<Summoner>()

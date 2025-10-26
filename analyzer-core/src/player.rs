@@ -35,7 +35,7 @@ impl Player {
         let mut inter = Interface::new(&api_key).await;
         println!("Creating new player {}", raw_username);
         let start_of_day = Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap()
-                .and_local_timezone(Utc).unwrap().timestamp_millis();
+                .and_local_timezone(Utc).unwrap().timestamp();
         let ident = inter.gen_player_ident_from_string(raw_username).await;
         Player {
             ident: ident.clone(),
@@ -52,13 +52,11 @@ impl Player {
         //TODO: check if we have fewer than 15 games, then check again with backed up timestamp
         let mut count = 0;
         while game_ids.len() < 15 {
-            time -= 86400000;
+            time -= 86400;
             if count > 30 { break; }
             count += 1;
             game_ids = self.interface.get_game_ids(&time.to_string(), &self.start_data.puuid).await.unwrap();
         }
-
-        self.interface = Interface::new(&self.start_data.api_key).await;
         
         self.games = Games::new(self.interface.get_match_data_collection(game_ids, &self.start_data.puuid).await.unwrap()).await;
     }

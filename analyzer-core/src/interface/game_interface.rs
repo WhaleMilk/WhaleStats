@@ -48,7 +48,7 @@ impl Interface {
 
     async fn request_game_data(&self, id: &String) -> Result<MatchData, Box<dyn Error>> {
         let resp = reqwest::get(
-            format!("https://{}.api.riotgames.com/lol/match/v5/matches/{}?api_key={}", self.server, id, self.api_key)
+            format!("https://{}.api.riotgames.com/lol/match/v5/matches/{}?api_key={}", &self.server, id, self.api_key)
         ).await
             .unwrap()
             .text()
