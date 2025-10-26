@@ -125,7 +125,8 @@ pub fn StatDisplay(read_puuid: ReadSignal<String>) -> impl IntoView {
         let render = graph_render.clone();
         
         spawn_local(async move {
-            let args = serde_wasm_bindgen::to_value(&RefreshArgs {timestamp: last_time, player: &user_puuid}).unwrap();
+            //let args = serde_wasm_bindgen::to_value(&RefreshArgs {timestamp: last_time, player: &user_puuid}).unwrap();
+            let args = serde_wasm_bindgen::to_value(&QueryArgs {rawUser: &user_puuid}).unwrap();
             let result = invoke("reload_profile_data", args).await;
             
             if let Some(true) = result.as_bool() {

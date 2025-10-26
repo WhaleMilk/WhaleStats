@@ -45,19 +45,18 @@ fn get_api_key() -> String {
         if save.is_empty_games().await {
             //load starting data for new player
             save.load_new_player().await; 
+            let mut player_file = OpenOptions::new().write(true).open(path).unwrap();
+            player_file.write(serde_json::to_string(&save).unwrap().as_bytes()).unwrap();
         } else {
             //load in existing data into player object, then load new games. 
             save.set_api(get_api_key()).await;
-            save.load_new_games().await; 
         }
-        let mut player_file = OpenOptions::new().write(true).open(path).unwrap();
-        player_file.write(serde_json::to_string(&save).unwrap().as_bytes()).unwrap();
         Ok(serde_json::to_string(&save.games).unwrap())
     }
 
     #[tauri::command]
-    async fn reload_profile_data(player: &str) -> Result<bool, ()> {
-        let location = format!("./profiles/{}.json", player);
+    async fn reload_profile_data(raw_user: &str) -> Result<bool, ()> {
+        let location = format!("./profiles/{}.json", raw_user);
         let path = Path::new(location.as_str());
         let mut player_profile_str = String::new();
         let mut player_file = OpenOptions::new().read(true).open(path).unwrap();
