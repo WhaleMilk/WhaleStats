@@ -49,7 +49,6 @@ impl Player {
     pub async fn load_new_player(&mut self) {
         let mut time = self.start_data.start_date.clone();
         let mut game_ids = self.interface.get_game_ids(&time.to_string(), &self.start_data.puuid).await.unwrap();
-        //TODO: check if we have fewer than 15 games, then check again with backed up timestamp
         let mut count = 0;
         while game_ids.len() < 15 {
             time -= 86400;
